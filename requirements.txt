@@ -1,0 +1,9 @@
+torch>=2.2,<2.5
+transformers>=4.45
+datasets
+accelerate
+pandas
+numpy
+tqdm
+jupyter
+transformer_lens

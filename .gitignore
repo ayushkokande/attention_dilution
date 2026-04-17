@@ -1,0 +1,22 @@
+# Local data and experiment outputs
+data/
+results/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Secrets
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# JSON outputs under results (explicit; entire results/ is also ignored)
+results/**/*.json
+
+# Hugging Face cache directories (project-local or nested)
+.cache/
+huggingface/
+**/.cache/huggingface/
