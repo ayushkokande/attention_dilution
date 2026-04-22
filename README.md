@@ -2,9 +2,20 @@
 
 Mechanistic analysis of long-context jailbreaks via attention dilution.
 
+The pipeline measures a model's baseline refusal behaviour, extracts a
+*refusal direction* in the residual stream, validates it via ablation /
+addition interventions, and then dives deeper with
+[`circuit-tracer`](https://github.com/safety-research/circuit-tracer) to
+identify and intervene on individual MLP transcoder features involved in
+refusal.
+
+The default model is **Qwen3-1.7B** (`Qwen/Qwen3-1.7B`); the matching
+transcoder set is **`mwhanna/qwen3-1.7b-transcoders-lowl0`**.
+
 ## Setup
 
-Use Python **3.11** (see `.python-version`). Create a virtual environment and install dependencies:
+Use Python **3.11** (see `.python-version`). Create a virtual environment and
+install dependencies:
 
 ```bash
 python3.11 -m venv .venv
@@ -12,19 +23,138 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Run the sanity check
+Note that `circuit-tracer` pins `transformers<=4.57.3`, so this project does
+the same. If you already have a newer `transformers` in the environment, the
+pinned version will be downgraded.
+
+## Pipeline
+
+All scripts are idempotent and write to `results/<model_slug>/…` (e.g.
+`results/qwen3-1.7b/`). Run from the repo root.
+
+### 1. Sanity check (baseline refusal rates)
 
 ```bash
 python src/sanity_check.py
 ```
 
-## What the sanity check does
+Runs `N_PROMPTS=20` harmful AdvBench prompts and 20 harmless Alpaca prompts
+through the model with `enable_thinking=False` and `MAX_NEW_TOKENS=256`.
+Classifies each reply with a simple keyword heuristic on the first ~200 chars
+after stripping any `<think>…</think>` block. You generally want:
 
-The script loads a small instruct model (`Qwen/Qwen2.5-1.5B-Instruct` by default), runs a fixed number of **harmful** prompts (from AdvBench via CSV) and **harmless** prompts (from `tatsu-lab/alpaca` with empty `input`), and classifies each completion with a simple **keyword-based refusal** heuristic on the start of the reply.
+- **Harmful refusal rate**: high (target ≥ 80%); Qwen3-1.7B usually exceeds
+  this easily.
+- **Harmless refusal rate**: near 0% (false-positive refusals).
 
-**How to read the output**
+Full per-prompt outputs land in `results/qwen3-1.7b/sanity_results.json`.
 
-- **Harmful refusal rate**: fraction of harmful prompts where the model’s reply looks like a refusal. For a safety-aligned chat model you generally want this **high** (the script flags a target of **≥ 80%**).
-- **Harmless refusal rate**: fraction of harmless prompts classified as refusal. You usually want this **near 0%**, since refusals on benign instructions indicate over-refusal or a brittle detector.
+### 2. Extract the refusal direction
 
-This is a **smoke test** for your environment and tokenizer/chat template, not a rigorous safety benchmark. Tune `MODEL_NAME`, `N_PROMPTS`, and `MAX_NEW_TOKENS` at the top of `src/sanity_check.py` as needed. Full per-prompt outputs are written to `results/sanity_results.json`.
+```bash
+python src/extract_refusal_direction.py
+```
+
+Caches residual-stream activations at the last prompt token for the same
+harmful/harmless split, computes the difference-of-means direction per layer,
+and reports the top-5 layers by a standardised separation score. Outputs:
+
+- `results/qwen3-1.7b/refusal_directions.pt`
+- `results/qwen3-1.7b/activations.pt`
+
+### 3. Intervene on the refusal direction
+
+```bash
+python src/intervene_refusal.py
+python src/intervene_ablate_long.py   # harmful-ablation with longer generations
+```
+
+Ablates the direction across all layers on held-out harmful prompts (expect
+refusal rate to drop) and adds it at the best layer on harmless prompts
+(expect refusal rate to rise).
+
+### 4. Visualize the steering direction
+
+```bash
+python src/visualize_refusal_direction.py
+python src/visualize_steering.py
+```
+
+Produces separation-by-layer curves, KDE/histogram plots of the projection
+onto the direction, a layer-by-layer cosine heatmap, a 2D PCA view at the
+best layer, and a bar chart of refusal rates across intervention conditions
+(including the circuit-tracer feature ablation if step 6 has been run).
+
+### 5. Circuit-level attribution with `circuit-tracer`
+
+```bash
+python src/trace_refusal_circuit.py
+```
+
+Loads `Qwen/Qwen3-1.7B` with its pre-trained per-layer transcoders via
+`ReplacementModel` and computes attribution graphs for:
+
+1. a held-out harmful prompt the baseline model refuses (pulled from
+   `intervention_results.json`), and
+2. a matched harmless prompt.
+
+Raw graphs are saved under `results/qwen3-1.7b/graphs/` and pruned JSON
+graph files (for the web UI) under `results/qwen3-1.7b/graph_files/`. A
+`graph_index.json` records which slug corresponds to which prompt.
+
+Browse the graphs interactively:
+
+```bash
+python src/visualize_refusal_graph.py --port 8046
+# then open http://localhost:8046/index.html
+```
+
+### 6. Feature-level intervention
+
+After inspecting the graphs and picking candidate refusal features, record
+them in `results/qwen3-1.7b/refusal_features.json`:
+
+```json
+{
+  "features": [
+    {"layer": 18, "pos_from_end": -1, "feature_idx": 12345, "label": "refusal_1"},
+    {"layer": 20, "pos_from_end": -1, "feature_idx": 777, "label": "refusal_2"}
+  ],
+  "value": 0.0
+}
+```
+
+Then run:
+
+```bash
+python src/intervene_refusal_features.py
+```
+
+This zeros each feature across the final prompt token and every generated
+token, reruns the held-out harmful prompts, and writes
+`intervention_feature_results.json`. Re-running
+`src/visualize_steering.py` adds a "harmful / feature ablate" bar to the
+summary chart.
+
+## Project layout
+
+```
+src/
+  utils.py                        # model + path constants, helpers
+  sanity_check.py                 # baseline refusal rates
+  extract_refusal_direction.py    # compute per-layer directions
+  intervene_refusal.py            # ablate / add direction, short generations
+  intervene_ablate_long.py        # ablate with longer generations
+  visualize_refusal_direction.py  # projection + separation plots
+  visualize_steering.py           # summary / cosine / PCA / bar-chart figures
+  trace_refusal_circuit.py        # circuit-tracer attribution graphs
+  visualize_refusal_graph.py      # wrapper around circuit-tracer's server
+  intervene_refusal_features.py   # zero specific transcoder features
+results/<model_slug>/             # all artefacts keyed by model slug
+```
+
+## Switching models
+
+`MODEL_NAME`, `MODEL_SLUG`, and `TRANSCODER_SET` live at the top of
+`src/utils.py`. Switch all four (model, slug, transcoder repo, and — if
+needed — `enable_thinking`) in one place.

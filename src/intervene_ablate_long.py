@@ -1,59 +1,30 @@
-"""
-Rerun ONLY the harmful/ablate condition from Experiment 3 with a larger
-max_new_tokens budget, so we can read what the ablated model actually produces
-past the 48-token cap used in intervene_refusal.py.
-
-Saves to results/intervention_results_full.json.
-"""
+"""Harmful-prompt ablation with a longer generation budget."""
 
 from __future__ import annotations
 
 import json
-import os
-from pathlib import Path
 
 import torch
-import transformers
 from tqdm.auto import tqdm
 
-if not hasattr(transformers, "TRANSFORMERS_CACHE"):
-    _hf_home = os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface"))
-    transformers.TRANSFORMERS_CACHE = os.path.join(_hf_home, "hub")
+from utils import (
+    MODEL_NAME,
+    ensure_transformers_cache_attr,
+    format_chat_prompt,
+    get_device,
+    load_harmful_prompts,
+    looks_like_refusal,
+    results_dir,
+    strip_think_block,
+)
 
+ensure_transformers_cache_attr()
 
-def _patch_qwen2_rope_theta_for_transformer_lens() -> None:
-    try:
-        from transformers.models.qwen2.configuration_qwen2 import Qwen2Config
-    except ImportError:
-        return
-    if getattr(Qwen2Config, "_tl_rope_theta_shim", False):
-        return
-
-    def _rope_theta_prop(self) -> float:
-        d = getattr(self, "__dict__", {})
-        if d.get("rope_theta") is not None:
-            return float(d["rope_theta"])
-        rp = getattr(self, "rope_parameters", None)
-        if isinstance(rp, dict) and rp.get("rope_theta") is not None:
-            return float(rp["rope_theta"])
-        return 1_000_000.0
-
-    Qwen2Config.rope_theta = property(_rope_theta_prop)  # type: ignore[assignment]
-    Qwen2Config._tl_rope_theta_shim = True
-
-
-_patch_qwen2_rope_theta_for_transformer_lens()
-
-from transformer_lens import HookedTransformer
-
-from utils import get_device, load_harmful_prompts, looks_like_refusal
-
-MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
-DIRECTIONS_PATH = Path("results/refusal_directions.pt")
-OUTPUT_PATH = Path("results/intervention_results_full.json")
+from transformer_lens import HookedTransformer  # noqa: E402
 
 N_HELD_OUT = 16
-MAX_NEW_TOKENS = 2000
+MAX_NEW_TOKENS = 512
+ENABLE_THINKING = False
 
 
 @torch.inference_mode()
@@ -71,19 +42,13 @@ def _generate(model: HookedTransformer, prompt_text: str, device: str) -> str:
     return model.tokenizer.decode(new_ids, skip_special_tokens=True).strip()
 
 
-def _format(tokenizer, text: str) -> str:
-    return tokenizer.apply_chat_template(
-        [{"role": "user", "content": text}],
-        tokenize=False,
-        add_generation_prompt=True,
-    )
-
-
 def main() -> None:
     device, dtype = get_device()
-    print(f"Device: {device}, dtype: {dtype}")
+    print(f"Device: {device}, dtype: {dtype}, model: {MODEL_NAME}")
 
-    payload = torch.load(DIRECTIONS_PATH, map_location="cpu", weights_only=False)
+    rdir = results_dir()
+    directions_path = rdir / "refusal_directions.pt"
+    payload = torch.load(directions_path, map_location="cpu", weights_only=False)
     best_layer = int(torch.argmax(payload["separation_scores"]).item())
     n_train = int(payload["n_prompts"])
     u = payload["refusal_dirs_normalized"][best_layer].to(device=device, dtype=dtype)
@@ -94,44 +59,48 @@ def main() -> None:
     )
     model.eval()
 
-    harmful_eval = load_harmful_prompts(n_train + N_HELD_OUT)[n_train : n_train + N_HELD_OUT]
+    harmful_eval = load_harmful_prompts(n_train + N_HELD_OUT)[n_train: n_train + N_HELD_OUT]
 
     def ablate_hook(resid, hook):
         proj = (resid * u).sum(dim=-1, keepdim=True)
         return resid - proj * u
 
-    fwd_hooks = [(f"blocks.{L}.hook_resid_post", ablate_hook) for L in range(model.cfg.n_layers)]
+    fwd_hooks = [
+        (f"blocks.{L}.hook_resid_post", ablate_hook) for L in range(model.cfg.n_layers)
+    ]
 
     results: list[dict] = []
     with model.hooks(fwd_hooks=fwd_hooks):
         for idx, prompt in enumerate(tqdm(harmful_eval, desc="harmful/ablate(long)")):
-            text = _format(model.tokenizer, prompt)
-            response = _generate(model, text, device)
+            text = format_chat_prompt(model.tokenizer, prompt, enable_thinking=ENABLE_THINKING)
+            raw = _generate(model, text, device)
             results.append(
                 {
                     "index": idx,
                     "prompt": prompt,
-                    "response": response,
-                    "refused": looks_like_refusal(response),
+                    "response_raw": raw,
+                    "response": strip_think_block(raw),
+                    "refused": looks_like_refusal(raw),
                 }
             )
 
     rate = sum(1 for r in results if r["refused"]) / len(results)
     print(f"\nRefusal rate (ablated, long): {rate:.1%}")
 
+    out_path = rdir / "intervention_results_full.json"
     summary = {
         "model": MODEL_NAME,
         "best_layer": best_layer,
         "n_held_out": N_HELD_OUT,
         "max_new_tokens": MAX_NEW_TOKENS,
+        "enable_thinking": ENABLE_THINKING,
         "condition": "harmful_ablate_long",
         "refusal_rate": rate,
         "samples": results,
     }
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
-    print(f"Wrote {OUTPUT_PATH}")
+    print(f"Wrote {out_path}")
 
 
 if __name__ == "__main__":

@@ -1,65 +1,32 @@
-"""
-Experiment 2: extract a per-layer refusal direction (harmful vs harmless mean difference)
-from last-token residual stream activations (Arditi et al. 2024 style).
-"""
+"""Compute per-layer refusal directions from residual activations."""
 
 from __future__ import annotations
 
-import os
-from pathlib import Path
-
 import torch
 import torch.nn.functional as F
-import transformers
 from tqdm.auto import tqdm
 
-# transformer_lens expects transformers.TRANSFORMERS_CACHE (removed in transformers v5+).
-if not hasattr(transformers, "TRANSFORMERS_CACHE"):
-    _hf_home = os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface"))
-    transformers.TRANSFORMERS_CACHE = os.path.join(_hf_home, "hub")
+from utils import (
+    MODEL_NAME,
+    ensure_transformers_cache_attr,
+    format_chat_prompt,
+    get_device,
+    load_harmful_prompts,
+    load_harmless_prompts,
+    results_dir,
+)
 
+ensure_transformers_cache_attr()
 
-def _patch_qwen2_rope_theta_for_transformer_lens() -> None:
-    """HF transformers v5+ Qwen2Config uses rope_parameters; transformer_lens reads rope_theta."""
-    try:
-        from transformers.models.qwen2.configuration_qwen2 import Qwen2Config
-    except ImportError:
-        return
-    if getattr(Qwen2Config, "_tl_rope_theta_shim", False):
-        return
+from transformer_lens import HookedTransformer  # noqa: E402
 
-    def _rope_theta_prop(self) -> float:
-        d = getattr(self, "__dict__", {})
-        if d.get("rope_theta") is not None:
-            return float(d["rope_theta"])
-        rp = getattr(self, "rope_parameters", None)
-        if isinstance(rp, dict):
-            t = rp.get("rope_theta")
-            if t is not None:
-                return float(t)
-        if rp is not None and hasattr(rp, "get"):
-            t = rp.get("rope_theta")  # type: ignore[union-attr]
-            if t is not None:
-                return float(t)
-        return 1_000_000.0
-
-    Qwen2Config.rope_theta = property(_rope_theta_prop)  # type: ignore[assignment]
-    Qwen2Config._tl_rope_theta_shim = True
-
-
-_patch_qwen2_rope_theta_for_transformer_lens()
-
-from transformer_lens import HookedTransformer
-
-from utils import get_device, load_harmful_prompts, load_harmless_prompts
-
-MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
 N_PROMPTS = 32
-OUTPUT_PATH = "results/refusal_directions.pt"
-ACTIVATIONS_PATH = "results/activations.pt"
+ENABLE_THINKING = False
 
 
-def _load_hooked_transformer(model_name: str, device: str, dtype: torch.dtype) -> HookedTransformer:
+def _load_hooked_transformer(
+    model_name: str, device: str, dtype: torch.dtype
+) -> HookedTransformer:
     kwargs = dict(model_name=model_name, device=device, dtype=dtype, trust_remote_code=True)
     try:
         return HookedTransformer.from_pretrained(**kwargs)
@@ -68,23 +35,10 @@ def _load_hooked_transformer(model_name: str, device: str, dtype: torch.dtype) -
         return HookedTransformer.from_pretrained_no_processing(**kwargs)
 
 
-def _format_prompt(tokenizer, user_text: str) -> str:
-    messages = [{"role": "user", "content": user_text}]
-    return tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=True,
-    )
-
-
 @torch.inference_mode()
-def _resid_post_last_token(
-    model: HookedTransformer, prompt_text: str
-) -> torch.Tensor:
-    """Residual stream after each block at the last prompt token: [n_layers, d_model] on CPU."""
+def _resid_post_last_token(model: HookedTransformer, prompt_text: str) -> torch.Tensor:
     _, cache = model.run_with_cache(prompt_text, return_type=None)
     n_layers = model.cfg.n_layers
-    d_model = model.cfg.d_model
     layers = []
     for L in range(n_layers):
         h = cache[f"blocks.{L}.hook_resid_post"][:, -1, :].detach().cpu().float()
@@ -97,7 +51,6 @@ def _separation_score(
     harmless_acts: torch.Tensor,
     norm_dirs: torch.Tensor,
 ) -> torch.Tensor:
-    """Per-layer d-prime style score; harmful_acts: [Nh, L, D], norm_dirs: [L, D]."""
     eps = 1e-8
     n_layers = norm_dirs.shape[0]
     scores = []
@@ -114,7 +67,7 @@ def _separation_score(
 
 def main() -> None:
     device, dtype = get_device()
-    print(f"Device: {device}, dtype: {dtype}")
+    print(f"Device: {device}, dtype: {dtype}, model: {MODEL_NAME}")
 
     model = _load_hooked_transformer(MODEL_NAME, device, dtype)
     model.eval()
@@ -137,12 +90,12 @@ def main() -> None:
 
     harmful_list: list[torch.Tensor] = []
     for prompt in tqdm(harmful_prompts, desc="Harmful prompts"):
-        text = _format_prompt(model.tokenizer, prompt)
+        text = format_chat_prompt(model.tokenizer, prompt, enable_thinking=ENABLE_THINKING)
         harmful_list.append(_resid_post_last_token(model, text))
 
     harmless_list: list[torch.Tensor] = []
     for prompt in tqdm(harmless_prompts, desc="Harmless prompts"):
-        text = _format_prompt(model.tokenizer, prompt)
+        text = format_chat_prompt(model.tokenizer, prompt, enable_thinking=ENABLE_THINKING)
         harmless_list.append(_resid_post_last_token(model, text))
 
     harmful_acts = torch.stack(harmful_list, dim=0)  # [N, L, D]
@@ -153,15 +106,18 @@ def main() -> None:
     refusal_dirs = mean_harmful - mean_harmless
     refusal_dirs_normalized = F.normalize(refusal_dirs, p=2, dim=-1)
 
-    separation_scores = _separation_score(harmful_acts, harmless_acts, refusal_dirs_normalized)
+    separation_scores = _separation_score(
+        harmful_acts, harmless_acts, refusal_dirs_normalized
+    )
 
     top5 = torch.topk(separation_scores, k=min(5, separation_scores.numel()))
     print("\nTop 5 layers by separation score:")
     for rank, (val, idx) in enumerate(zip(top5.values.tolist(), top5.indices.tolist()), start=1):
         print(f"  {rank}. layer {idx}: {val:.4f}")
 
-    out_dir = Path(OUTPUT_PATH).parent
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir = results_dir()
+    directions_path = out_dir / "refusal_directions.pt"
+    activations_path = out_dir / "activations.pt"
 
     torch.save(
         {
@@ -171,19 +127,20 @@ def main() -> None:
             "mean_harmless": mean_harmless,
             "separation_scores": separation_scores,
             "model_name": MODEL_NAME,
+            "enable_thinking": ENABLE_THINKING,
             "n_prompts": N_PROMPTS,
             "n_layers": model.cfg.n_layers,
             "d_model": model.cfg.d_model,
         },
-        OUTPUT_PATH,
+        directions_path,
     )
-    print(f"\nSaved directions to {OUTPUT_PATH}")
+    print(f"\nSaved directions to {directions_path}")
 
     torch.save(
         {"harmful": harmful_acts, "harmless": harmless_acts},
-        ACTIVATIONS_PATH,
+        activations_path,
     )
-    print(f"Saved activations to {ACTIVATIONS_PATH}")
+    print(f"Saved activations to {activations_path}")
 
 
 if __name__ == "__main__":

@@ -1,85 +1,31 @@
-"""
-Experiment 3: causal intervention via the refusal direction from Experiment 2.
-
-Two interventions on held-out prompts:
-  - ABLATION (harmful prompts): at every block's hook_resid_post, project the
-    layer-L normalized refusal direction out of the residual stream. Expectation:
-    refusal rate drops (the model complies).
-  - ADDITION (harmless prompts): at layer L's hook_resid_post, add the raw
-    mean-difference vector (mean_harmful - mean_harmless) to the residual stream.
-    Expectation: refusal rate rises (refusal is induced).
-
-If both effects appear, the layer-L direction is not merely correlated with
-refusal: it is a causal lever on it.
-"""
+"""Forward hooks: ablate refusal direction on harmful prompts; add it on harmless prompts."""
 
 from __future__ import annotations
 
 import json
-import os
-from pathlib import Path
 
 import torch
-import transformers
 from tqdm.auto import tqdm
 
-if not hasattr(transformers, "TRANSFORMERS_CACHE"):
-    _hf_home = os.environ.get("HF_HOME", os.path.expanduser("~/.cache/huggingface"))
-    transformers.TRANSFORMERS_CACHE = os.path.join(_hf_home, "hub")
-
-
-def _patch_qwen2_rope_theta_for_transformer_lens() -> None:
-    try:
-        from transformers.models.qwen2.configuration_qwen2 import Qwen2Config
-    except ImportError:
-        return
-    if getattr(Qwen2Config, "_tl_rope_theta_shim", False):
-        return
-
-    def _rope_theta_prop(self) -> float:
-        d = getattr(self, "__dict__", {})
-        if d.get("rope_theta") is not None:
-            return float(d["rope_theta"])
-        rp = getattr(self, "rope_parameters", None)
-        if isinstance(rp, dict):
-            t = rp.get("rope_theta")
-            if t is not None:
-                return float(t)
-        if rp is not None and hasattr(rp, "get"):
-            t = rp.get("rope_theta")  # type: ignore[union-attr]
-            if t is not None:
-                return float(t)
-        return 1_000_000.0
-
-    Qwen2Config.rope_theta = property(_rope_theta_prop)  # type: ignore[assignment]
-    Qwen2Config._tl_rope_theta_shim = True
-
-
-_patch_qwen2_rope_theta_for_transformer_lens()
-
-from transformer_lens import HookedTransformer
-
 from utils import (
+    MODEL_NAME,
+    ensure_transformers_cache_attr,
+    format_chat_prompt,
     get_device,
     load_harmful_prompts,
     load_harmless_prompts,
     looks_like_refusal,
+    results_dir,
+    strip_think_block,
 )
 
-MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
-DIRECTIONS_PATH = Path("results/refusal_directions.pt")
-OUTPUT_PATH = Path("results/intervention_results.json")
+ensure_transformers_cache_attr()
+
+from transformer_lens import HookedTransformer  # noqa: E402
 
 N_HELD_OUT = 16
-MAX_NEW_TOKENS = 48
-
-
-def _format(tokenizer, text: str) -> str:
-    return tokenizer.apply_chat_template(
-        [{"role": "user", "content": text}],
-        tokenize=False,
-        add_generation_prompt=True,
-    )
+MAX_NEW_TOKENS = 64
+ENABLE_THINKING = False
 
 
 @torch.inference_mode()
@@ -104,20 +50,21 @@ def _run_condition(
     device: str,
     label: str,
 ) -> list[dict]:
-    results: list[dict] = []
+    out: list[dict] = []
     with model.hooks(fwd_hooks=fwd_hooks):
         for idx, prompt in enumerate(tqdm(prompts, desc=label)):
-            text = _format(model.tokenizer, prompt)
-            response = _generate(model, text, device)
-            results.append(
+            text = format_chat_prompt(model.tokenizer, prompt, enable_thinking=ENABLE_THINKING)
+            raw = _generate(model, text, device)
+            out.append(
                 {
                     "index": idx,
                     "prompt": prompt,
-                    "response": response,
-                    "refused": looks_like_refusal(response),
+                    "response_raw": raw,
+                    "response": strip_think_block(raw),
+                    "refused": looks_like_refusal(raw),
                 }
             )
-    return results
+    return out
 
 
 def _rate(xs: list[dict]) -> float:
@@ -126,13 +73,14 @@ def _rate(xs: list[dict]) -> float:
 
 def main() -> None:
     device, dtype = get_device()
-    print(f"Device: {device}, dtype: {dtype}")
+    print(f"Device: {device}, dtype: {dtype}, model: {MODEL_NAME}")
 
-    if not DIRECTIONS_PATH.is_file():
+    directions_path = results_dir() / "refusal_directions.pt"
+    if not directions_path.is_file():
         raise FileNotFoundError(
-            f"{DIRECTIONS_PATH} not found. Run src/extract_refusal_direction.py first."
+            f"{directions_path} not found. Run src/extract_refusal_direction.py first."
         )
-    payload = torch.load(DIRECTIONS_PATH, map_location="cpu", weights_only=False)
+    payload = torch.load(directions_path, map_location="cpu", weights_only=False)
 
     separation = payload["separation_scores"]
     best_layer = int(torch.argmax(separation).item())
@@ -153,8 +101,8 @@ def main() -> None:
 
     harmful_all = load_harmful_prompts(n_train + N_HELD_OUT)
     harmless_all = load_harmless_prompts(n_train + N_HELD_OUT)
-    harmful_eval = harmful_all[n_train : n_train + N_HELD_OUT]
-    harmless_eval = harmless_all[n_train : n_train + N_HELD_OUT]
+    harmful_eval = harmful_all[n_train: n_train + N_HELD_OUT]
+    harmless_eval = harmless_all[n_train: n_train + N_HELD_OUT]
 
     def ablate_hook(resid, hook):
         proj = (resid * u).sum(dim=-1, keepdim=True)
@@ -198,6 +146,7 @@ def main() -> None:
         "best_layer": best_layer,
         "n_held_out": N_HELD_OUT,
         "max_new_tokens": MAX_NEW_TOKENS,
+        "enable_thinking": ENABLE_THINKING,
         "refusal_dir_norm": float(add_vec.norm().item()),
         "rates": rates,
         "samples": {
@@ -207,10 +156,10 @@ def main() -> None:
             "harmless_add": harmless_add,
         },
     }
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+    out_path = results_dir() / "intervention_results.json"
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
-    print(f"\nWrote {OUTPUT_PATH}")
+    print(f"\nWrote {out_path}")
 
 
 if __name__ == "__main__":

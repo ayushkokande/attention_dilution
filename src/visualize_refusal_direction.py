@@ -1,4 +1,4 @@
-"""Plot separation by layer and projection histograms for top refusal layers."""
+"""Figures from saved direction and activation tensors."""
 
 from __future__ import annotations
 
@@ -8,16 +8,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
+from utils import results_dir
+
 try:
     from scipy.stats import gaussian_kde
 
     _HAS_SCIPY = True
 except ImportError:
     _HAS_SCIPY = False
-
-RESULTS_DIR = Path("results")
-REFUSAL_PATH = RESULTS_DIR / "refusal_directions.pt"
-ACTIVATIONS_PATH = RESULTS_DIR / "activations.pt"
 
 
 def _load_torch(path: Path):
@@ -61,27 +59,26 @@ def _plot_kde_or_hist(ax, harmful: np.ndarray, harmless: np.ndarray, title: str)
 
 
 def main() -> None:
-    if not REFUSAL_PATH.is_file() or not ACTIVATIONS_PATH.is_file():
+    rdir = results_dir()
+    refusal_path = rdir / "refusal_directions.pt"
+    activations_path = rdir / "activations.pt"
+
+    if not refusal_path.is_file() or not activations_path.is_file():
         raise FileNotFoundError(
-            f"Missing {REFUSAL_PATH} and/or {ACTIVATIONS_PATH}. "
+            f"Missing {refusal_path} and/or {activations_path}. "
             "Run `python src/extract_refusal_direction.py` from the repo root first."
         )
-    payload = _load_torch(REFUSAL_PATH)
-    acts = _load_torch(ACTIVATIONS_PATH)
+    payload = _load_torch(refusal_path)
+    acts = _load_torch(activations_path)
 
     harmful = acts["harmful"]
     harmless = acts["harmless"]
     norm_dirs = payload["refusal_dirs_normalized"]
     scores = payload["separation_scores"]
-    if isinstance(scores, torch.Tensor):
-        scores_np = scores.numpy()
-    else:
-        scores_np = np.asarray(scores)
+    scores_np = scores.numpy() if isinstance(scores, torch.Tensor) else np.asarray(scores)
 
     n_layers = int(scores_np.shape[0])
     layers_axis = np.arange(n_layers)
-
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.plot(layers_axis, scores_np, marker="o", markersize=3)
@@ -89,7 +86,7 @@ def main() -> None:
     ax.set_ylabel("Separation score")
     ax.set_title("Harmful vs harmless separation by layer")
     fig.tight_layout()
-    fig.savefig(RESULTS_DIR / "separation_by_layer.png", dpi=150)
+    fig.savefig(rdir / "separation_by_layer.png", dpi=150)
     plt.close(fig)
 
     topk = min(3, n_layers)
@@ -103,13 +100,10 @@ def main() -> None:
         fig, ax = plt.subplots(figsize=(6, 4))
         _plot_kde_or_hist(ax, ph, ps, title=f"Layer {L} (separation rank {rank + 1})")
         fig.tight_layout()
-        fig.savefig(RESULTS_DIR / f"projection_layer_{L}.png", dpi=150)
+        fig.savefig(rdir / f"projection_layer_{L}.png", dpi=150)
         plt.close(fig)
 
     print(f"Best layer: {best_idx} (separation = {best_val:.4f})")
-    print(
-        f"Layer {best_idx} shows the clearest refusal signal in this mean-difference direction."
-    )
 
 
 if __name__ == "__main__":
