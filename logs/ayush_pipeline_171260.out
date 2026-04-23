@@ -1,0 +1,14 @@
+=== preflight | REPO=/scratch/ak13124/attention_dilution ===
+total 32
+drwxr-xr-x.  6 ak13124 ak13124    0 Apr 22 22:13 .
+drwx------. 18 ak13124 ak13124    0 Apr 22 22:10 ..
+-rw-r--r--.  1 ak13124 ak13124  330 Apr 22 20:01 .gitignore
+-rw-r--r--.  1 ak13124 ak13124   40 Apr 22 21:39 .last_pipeline_log
+-rw-r--r--.  1 ak13124 ak13124    5 Apr 22 20:01 .python-version
+-rw-r--r--.  1 ak13124 ak13124 5957 Apr 22 20:03 Project_Proposal_LLM_Reasoners.pdf
+-rw-r--r--.  1 ak13124 ak13124 5397 Apr 22 21:31 README.md
+drwxr-xr-x.  2 ak13124 ak13124    0 Apr 22 20:01 Suraj
+drwxr-xr-x.  2 ak13124 ak13124    0 Apr 22 21:39 ayush
+drwxr-xr-x.  2 ak13124 ak13124    0 Apr 22 22:13 logs
+-rw-r--r--.  1 ak13124 ak13124  153 Apr 22 20:01 requirements.txt
+drwxr-xr-x.  3 ak13124 ak13124    0 Apr 22 21:02 results

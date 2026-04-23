@@ -1,0 +1,11 @@
+Using CPython 3.11.14
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+  × No solution found when resolving dependencies:
+  ╰─▶ Because only the following versions of transformer-lens are available:
+          transformer-lens<=2.18.0
+          transformer-lens>=3
+      and transformer-lens==2.18.0 depends on torch>=2.6, we can conclude that
+      transformer-lens>=2.18.0,<3 depends on torch>=2.6.
+      And because you require torch>=2.2,<2.5 and transformer-lens>=2.18,<3,
+      we can conclude that your requirements are unsatisfiable.

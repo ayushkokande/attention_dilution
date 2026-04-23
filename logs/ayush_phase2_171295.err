@@ -1,0 +1,15 @@
+Audited 12 packages in 2.59s
+/scratch/ak13124/attention_dilution/.venv/lib/python3.11/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|                                                              | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|███████████████████████████                           | 1/2 [00:00<00:00,  1.46it/s]Loading checkpoint shards: 100%|██████████████████████████████████████████████████████| 2/2 [00:00<00:00,  2.91it/s]
+WARNING:root:With reduced precision, it is advised to use `from_pretrained_no_processing` instead of `from_pretrained`.
+WARNING:root:You are not using LayerNorm, so the writing weights can't be centered! Skipping
+
+real	6m15.949s
+user	7m52.013s
+sys	0m14.742s
+
+real	0m8.357s
+user	0m4.918s
+sys	0m2.134s

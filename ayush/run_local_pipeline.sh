@@ -60,8 +60,10 @@ run_step() {
 [ "${RUN_INTERVENE}" = "1" ]        && run_step intervene_refusal      "${PY}" ayush/intervene_refusal.py
 [ "${RUN_ABLATE_LONG}" = "1" ]      && run_step intervene_ablate_long  "${PY}" ayush/intervene_ablate_long.py
 [ "${RUN_VISUALIZE_DIR}" = "1" ]    && run_step visualize_direction    "${PY}" ayush/visualize_refusal_direction.py
+=======
 [ "${RUN_SCALING_SWEEP}" = "1" ]    && run_step scaling_sweep          "${PY}" ayush/sweep_context_scaling.py
 [ "${RUN_VISUALIZE_SCALING}" = "1" ] && run_step visualize_scaling      "${PY}" ayush/visualize_scaling.py
+>>>>>>> 0b70ed7c7a820896952e4d120dd3a71cd098e03e
 [ "${RUN_TRACE}" = "1" ]            && run_step trace_refusal_circuit  "${PY}" ayush/trace_refusal_circuit.py
 [ "${RUN_FEATURE_INTERVENE}" = "1" ] && run_step intervene_features     "${PY}" ayush/intervene_refusal_features.py
 [ "${RUN_VISUALIZE_STEER}" = "1" ]  && run_step visualize_steering     "${PY}" ayush/visualize_steering.py
