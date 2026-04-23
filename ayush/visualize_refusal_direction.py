@@ -66,7 +66,7 @@ def main() -> None:
     if not refusal_path.is_file() or not activations_path.is_file():
         raise FileNotFoundError(
             f"Missing {refusal_path} and/or {activations_path}. "
-            "Run `python src/extract_refusal_direction.py` from the repo root first."
+            "Run `python ayush/extract_refusal_direction.py` from the repo root first."
         )
     payload = _load_torch(refusal_path)
     acts = _load_torch(activations_path)

@@ -2,7 +2,7 @@
 
 Reads a feature list from ``results/<slug>/refusal_features.json``. The file is
 produced by hand after inspecting the attribution graphs from
-``src/trace_refusal_circuit.py`` and has the shape::
+``ayush/trace_refusal_circuit.py`` and has the shape::
 
     {
       "features": [
