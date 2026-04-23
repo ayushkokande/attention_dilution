@@ -1,0 +1,366 @@
+Resolved 189 packages in 13.80s
+Downloading nvidia-cufft (204.2MiB)
+Downloading aiohttp (1.7MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading tokenizers (3.1MiB)
+Downloading hf-xet (4.0MiB)
+Downloading torch (506.0MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading pyarrow (46.6MiB)
+Downloading matplotlib (8.3MiB)
+Downloading triton (179.5MiB)
+Downloading scipy (33.7MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading pillow (6.8MiB)
+Downloading pygments (1.2MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading nvidia-nvjitlink (38.8MiB)
+Downloading setuptools (1.0MiB)
+Downloading nvidia-nccl-cu13 (187.4MiB)
+Downloading zstandard (5.3MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading sentencepiece (1.3MiB)
+Downloading cuda-bindings (6.0MiB)
+Downloading nvidia-cudnn-cu13 (349.1MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading notebook (13.9MiB)
+Downloading jupyterlab (11.9MiB)
+Downloading wandb (25.9MiB)
+Downloading transformers (11.4MiB)
+Downloading fonttools (4.8MiB)
+Downloading numpy (17.4MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading pandas (11.7MiB)
+Downloading kiwisolver (1.4MiB)
+Downloading nvidia-cusparselt-cu13 (162.0MiB)
+ Downloaded nvidia-cufile
+ Downloaded sentencepiece
+ Downloaded kiwisolver
+ Downloaded aiohttp
+ Downloaded pydantic-core
+ Downloaded nvidia-cuda-runtime
+   Building transformers-stream-generator==0.0.5
+      Built transformers-stream-generator==0.0.5
+ Downloaded pygments
+ Downloaded tokenizers
+ Downloaded setuptools
+ Downloaded hf-xet
+ Downloaded fonttools
+ Downloaded zstandard
+ Downloaded cuda-bindings
+ Downloaded pillow
+ Downloaded nvidia-cuda-cupti
+ Downloaded matplotlib
+ Downloaded jupyterlab
+ Downloaded notebook
+ Downloaded pandas
+ Downloaded numpy
+ Downloaded transformers
+ Downloaded nvidia-nvjitlink
+ Downloaded scipy
+ Downloaded wandb
+ Downloaded nvidia-curand
+ Downloaded nvidia-nvshmem-cu13
+ Downloaded nvidia-cuda-nvrtc
+ Downloaded pyarrow
+ Downloaded nvidia-cusparse
+ Downloaded nvidia-cusparselt-cu13
+ Downloaded nvidia-nccl-cu13
+ Downloaded nvidia-cusolver
+ Downloaded nvidia-cufft
+ Downloaded triton
+ Downloaded nvidia-cudnn-cu13
+ Downloaded nvidia-cublas
+ Downloaded torch
+Prepared 103 packages in 3m 01s
+Installed 189 packages in 53.65s
+ + accelerate==1.13.0
+ + aiohappyeyeballs==2.6.1
+ + aiohttp==3.13.5
+ + aiosignal==1.4.0
+ + annotated-types==0.7.0
+ + anyio==4.13.0
+ + argon2-cffi==25.1.0
+ + argon2-cffi-bindings==25.1.0
+ + arrow==1.4.0
+ + astor==0.8.1
+ + asttokens==3.0.1
+ + async-lru==2.3.0
+ + attrs==26.1.0
+ + babel==2.18.0
+ + beartype==0.14.1
+ + beautifulsoup4==4.14.3
+ + better-abc==0.0.3
+ + bidict==0.23.1
+ + bleach==6.3.0
+ + certifi==2026.4.22
+ + cffi==2.0.0
+ + charset-normalizer==3.4.7
+ + circuit-tracer==0.5.0
+ + click==8.3.3
+ + cloudpickle==3.1.2
+ + comm==0.2.3
+ + contourpy==1.3.3
+ + cuda-bindings==13.2.0
+ + cuda-pathfinder==1.5.3
+ + cuda-toolkit==13.0.2
+ + cycler==0.12.1
+ + datasets==4.8.4
+ + debugpy==1.8.20
+ + decorator==5.2.1
+ + defusedxml==0.7.1
+ + dill==0.4.1
+ + einops==0.8.2
+ + executing==2.2.1
+ + fancy-einsum==0.0.3
+ + fastjsonschema==2.21.2
+ + filelock==3.29.0
+ + fonttools==4.62.1
+ + fqdn==1.5.1
+ + frozenlist==1.8.0
+ + fsspec==2026.2.0
+ + gitdb==4.0.12
+ + gitpython==3.1.47
+ + h11==0.16.0
+ + hf-xet==1.4.3
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + huggingface-hub==0.36.2
+ + idna==3.13
+ + ipykernel==7.2.0
+ + ipython==9.10.1
+ + ipython-pygments-lexers==1.1.1
+ + ipywidgets==8.1.8
+ + isoduration==20.11.0
+ + jaxtyping==0.3.9
+ + jedi==0.19.2
+ + jinja2==3.1.6
+ + json5==0.14.0
+ + jsonpointer==3.1.1
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + jupyter==1.1.1
+ + jupyter-client==8.8.0
+ + jupyter-console==6.6.3
+ + jupyter-core==5.9.1
+ + jupyter-events==0.12.1
+ + jupyter-lsp==2.3.1
+ + jupyter-server==2.17.0
+ + jupyter-server-terminals==0.5.4
+ + jupyterlab==4.5.6
+ + jupyterlab-pygments==0.3.0
+ + jupyterlab-server==2.28.0
+ + jupyterlab-widgets==3.0.16
+ + kiwisolver==1.5.0
+ + lark==1.3.1
+ + markdown-it-py==4.0.0
+ + markupsafe==3.0.3
+ + matplotlib==3.10.8
+ + matplotlib-inline==0.2.1
+ + mdurl==0.1.2
+ + mistune==3.2.0
+ + mpmath==1.3.0
+ + multidict==6.7.1
+ + multiprocess==0.70.19
+ + nbclient==0.10.4
+ + nbconvert==7.17.1
+ + nbformat==5.10.4
+ + nest-asyncio==1.6.0
+ + networkx==3.6.1
+ + nnsight==0.6.3
+ + notebook==7.5.5
+ + notebook-shim==0.2.4
+ + numpy==1.26.4
+ + nvidia-cublas==13.1.0.3
+ + nvidia-cuda-cupti==13.0.85
+ + nvidia-cuda-nvrtc==13.0.88
+ + nvidia-cuda-runtime==13.0.96
+ + nvidia-cudnn-cu13==9.19.0.56
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.0
+ + nvidia-nccl-cu13==2.28.9
+ + nvidia-nvjitlink==13.0.88
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + overrides==7.7.0
+ + packaging==26.1
+ + pandas==2.0.3
+ + pandocfilters==1.5.1
+ + parso==0.8.6
+ + pexpect==4.9.0
+ + pillow==12.2.0
+ + platformdirs==4.9.6
+ + prometheus-client==0.25.0
+ + prompt-toolkit==3.0.52
+ + propcache==0.4.1
+ + protobuf==7.34.1
+ + psutil==7.2.2
+ + ptyprocess==0.7.0
+ + pure-eval==0.2.3
+ + pyarrow==24.0.0
+ + pycparser==3.0
+ + pydantic==2.13.3
+ + pydantic-core==2.46.3
+ + pygments==2.20.0
+ + pyparsing==3.3.2
+ + python-dateutil==2.9.0.post0
+ + python-engineio==4.13.1
+ + python-json-logger==4.1.0
+ + python-socketio==5.16.1
+ + pytz==2026.1.post1
+ + pyyaml==6.0.3
+ + pyzmq==27.1.0
+ + referencing==0.37.0
+ + regex==2026.4.4
+ + requests==2.33.1
+ + rfc3339-validator==0.1.4
+ + rfc3986-validator==0.1.1
+ + rfc3987-syntax==1.1.0
+ + rich==15.0.0
+ + rpds-py==0.30.0
+ + safetensors==0.7.0
+ + scipy==1.17.1
+ + send2trash==2.1.0
+ + sentencepiece==0.2.1
+ + sentry-sdk==2.58.0
+ + setuptools==81.0.0
+ + simple-websocket==1.1.0
+ + six==1.17.0
+ + smmap==5.0.3
+ + soupsieve==2.8.3
+ + stack-data==0.6.3
+ + sympy==1.14.0
+ + terminado==0.18.1
+ + tinycss2==1.4.0
+ + tokenizers==0.22.2
+ + toml==0.10.2
+ + torch==2.11.0
+ + tornado==6.5.5
+ + tqdm==4.67.3
+ + traitlets==5.14.3
+ + transformer-lens==2.18.0
+ + transformers==4.57.3
+ + transformers-stream-generator==0.0.5
+ + triton==3.6.0
+ + typeguard==4.5.1
+ + typing-extensions==4.15.0
+ + typing-inspection==0.4.2
+ + tzdata==2026.1
+ + uri-template==1.3.0
+ + urllib3==2.6.3
+ + wadler-lindig==0.1.7
+ + wandb==0.26.0
+ + wcwidth==0.6.0
+ + webcolors==25.10.0
+ + webencodings==0.5.1
+ + websocket-client==1.9.0
+ + widgetsnbextension==4.0.15
+ + wsproto==1.3.2
+ + xxhash==3.6.0
+ + yarl==1.23.0
+ + zstandard==0.25.0
+/scratch/ak13124/attention_dilution/.venv/lib/python3.11/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+`torch_dtype` is deprecated! Use `dtype` instead!
+Fetching 2 files:   0%|                                                                                                           | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████████████████████████████████████████████████▌                                                 | 1/2 [00:17<00:17, 17.40s/it]Fetching 2 files: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:17<00:00,  8.70s/it]
+Loading checkpoint shards:   0%|                                                                                                  | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████████████████████████████████████████████                                             | 1/2 [00:01<00:01,  1.50s/it]Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:01<00:00,  1.29it/s]
+Generating train split:   0%|                                                                                          | 0/52002 [00:00<?, ? examples/s]Generating train split:   2%|█▍                                                                           | 1000/52002 [00:00<00:13, 3683.94 examples/s]Generating train split: 100%|██████████████████████████████████████████████████████████████████████████| 52002/52002 [00:00<00:00, 107866.33 examples/s]
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+
+real	6m8.401s
+user	4m41.418s
+sys	0m12.629s
+/scratch/ak13124/attention_dilution/.venv/lib/python3.11/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|                                                                                                  | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 44.29it/s]
+WARNING:root:With reduced precision, it is advised to use `from_pretrained_no_processing` instead of `from_pretrained`.
+WARNING:root:You are not using LayerNorm, so the writing weights can't be centered! Skipping
+Harmful prompts:   0%|                                                                                                           | 0/32 [00:00<?, ?it/s]Harmful prompts:   3%|███                                                                                                | 1/32 [00:00<00:14,  2.18it/s]Harmful prompts:   9%|█████████▎                                                                                         | 3/32 [00:00<00:05,  5.21it/s]Harmful prompts:  16%|███████████████▍                                                                                   | 5/32 [00:00<00:03,  6.88it/s]Harmful prompts:  19%|██████████████████▌                                                                                | 6/32 [00:00<00:03,  7.50it/s]Harmful prompts:  25%|████████████████████████▊                                                                          | 8/32 [00:01<00:02,  8.49it/s]Harmful prompts:  28%|███████████████████████████▊                                                                       | 9/32 [00:01<00:02,  8.80it/s]Harmful prompts:  31%|██████████████████████████████▋                                                                   | 10/32 [00:01<00:03,  6.39it/s]Harmful prompts:  34%|█████████████████████████████████▋                                                                | 11/32 [00:01<00:02,  7.07it/s]Harmful prompts:  38%|████████████████████████████████████▊                                                             | 12/32 [00:01<00:02,  7.68it/s]Harmful prompts:  44%|██████████████████████████████████████████▉                                                       | 14/32 [00:01<00:02,  8.62it/s]Harmful prompts:  50%|█████████████████████████████████████████████████                                                 | 16/32 [00:02<00:01,  9.16it/s]Harmful prompts:  56%|███████████████████████████████████████████████████████▏                                          | 18/32 [00:02<00:01,  9.51it/s]Harmful prompts:  62%|█████████████████████████████████████████████████████████████▎                                    | 20/32 [00:02<00:01,  9.73it/s]Harmful prompts:  69%|███████████████████████████████████████████████████████████████████▍                              | 22/32 [00:02<00:01,  9.83it/s]Harmful prompts:  72%|██████████████████████████████████████████████████████████████████████▍                           | 23/32 [00:02<00:01,  7.48it/s]Harmful prompts:  78%|████████████████████████████████████████████████████████████████████████████▌                     | 25/32 [00:03<00:00,  8.26it/s]Harmful prompts:  84%|██████████████████████████████████████████████████████████████████████████████████▋               | 27/32 [00:03<00:00,  8.82it/s]Harmful prompts:  91%|████████████████████████████████████████████████████████████████████████████████████████▊         | 29/32 [00:03<00:00,  9.21it/s]Harmful prompts:  97%|██████████████████████████████████████████████████████████████████████████████████████████████▉   | 31/32 [00:03<00:00,  9.49it/s]Harmful prompts: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 32/32 [00:03<00:00,  8.26it/s]
+Harmless prompts:   0%|                                                                                                          | 0/32 [00:00<?, ?it/s]Harmless prompts:   6%|██████▏                                                                                           | 2/32 [00:00<00:02, 10.28it/s]Harmless prompts:  12%|████████████▎                                                                                     | 4/32 [00:00<00:04,  6.76it/s]Harmless prompts:  19%|██████████████████▍                                                                               | 6/32 [00:00<00:03,  7.99it/s]Harmless prompts:  25%|████████████████████████▌                                                                         | 8/32 [00:00<00:02,  8.73it/s]Harmless prompts:  31%|██████████████████████████████▎                                                                  | 10/32 [00:01<00:02,  9.20it/s]Harmless prompts:  38%|████████████████████████████████████▍                                                            | 12/32 [00:01<00:02,  9.37it/s]Harmless prompts:  44%|██████████████████████████████████████████▍                                                      | 14/32 [00:01<00:01,  9.64it/s]Harmless prompts:  47%|█████████████████████████████████████████████▍                                                   | 15/32 [00:01<00:02,  7.39it/s]Harmless prompts:  53%|███████████████████████████████████████████████████▌                                             | 17/32 [00:02<00:01,  8.18it/s]Harmless prompts:  59%|█████████████████████████████████████████████████████████▌                                       | 19/32 [00:02<00:01,  8.77it/s]Harmless prompts:  66%|███████████████████████████████████████████████████████████████▋                                 | 21/32 [00:02<00:01,  9.17it/s]Harmless prompts:  72%|█████████████████████████████████████████████████████████████████████▋                           | 23/32 [00:02<00:00,  9.47it/s]Harmless prompts:  78%|███████████████████████████████████████████████████████████████████████████▊                     | 25/32 [00:02<00:00,  9.69it/s]Harmless prompts:  84%|█████████████████████████████████████████████████████████████████████████████████▊               | 27/32 [00:02<00:00,  9.84it/s]Harmless prompts:  91%|███████████████████████████████████████████████████████████████████████████████████████▉         | 29/32 [00:03<00:00,  7.88it/s]Harmless prompts:  97%|█████████████████████████████████████████████████████████████████████████████████████████████▉   | 31/32 [00:03<00:00,  8.46it/s]Harmless prompts: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 32/32 [00:03<00:00,  8.73it/s]
+
+real	0m38.992s
+user	0m27.567s
+sys	0m4.698s
+/scratch/ak13124/attention_dilution/.venv/lib/python3.11/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|                                                                                                  | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 44.92it/s]
+WARNING:root:With reduced precision, it is advised to use `from_pretrained_no_processing` instead of `from_pretrained`.
+WARNING:root:You are not using LayerNorm, so the writing weights can't be centered! Skipping
+harmful/base:   0%|                                                                                                              | 0/16 [00:00<?, ?it/s]harmful/base:   6%|██████▍                                                                                               | 1/16 [00:04<01:12,  4.83s/it]harmful/base:  12%|████████████▊                                                                                         | 2/16 [00:09<01:04,  4.58s/it]harmful/base:  19%|███████████████████▏                                                                                  | 3/16 [00:13<00:58,  4.51s/it]harmful/base:  25%|█████████████████████████▌                                                                            | 4/16 [00:18<00:53,  4.46s/it]harmful/base:  31%|███████████████████████████████▉                                                                      | 5/16 [00:22<00:48,  4.44s/it]harmful/base:  38%|██████████████████████████████████████▎                                                               | 6/16 [00:26<00:44,  4.42s/it]harmful/base:  44%|████████████████████████████████████████████▋                                                         | 7/16 [00:31<00:39,  4.43s/it]harmful/base:  50%|███████████████████████████████████████████████████                                                   | 8/16 [00:35<00:35,  4.43s/it]harmful/base:  56%|█████████████████████████████████████████████████████████▍                                            | 9/16 [00:40<00:30,  4.43s/it]harmful/base:  62%|███████████████████████████████████████████████████████████████▏                                     | 10/16 [00:44<00:26,  4.42s/it]harmful/base:  69%|█████████████████████████████████████████████████████████████████████▍                               | 11/16 [00:48<00:22,  4.41s/it]harmful/base:  75%|███████████████████████████████████████████████████████████████████████████▊                         | 12/16 [00:53<00:17,  4.39s/it]harmful/base:  81%|██████████████████████████████████████████████████████████████████████████████████                   | 13/16 [00:57<00:13,  4.37s/it]harmful/base:  88%|████████████████████████████████████████████████████████████████████████████████████████▍            | 14/16 [01:01<00:08,  4.36s/it]harmful/base:  94%|██████████████████████████████████████████████████████████████████████████████████████████████▋      | 15/16 [01:06<00:04,  4.34s/it]harmful/base: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:10<00:00,  4.33s/it]harmful/base: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:10<00:00,  4.41s/it]
+harmful/ablate:   0%|                                                                                                            | 0/16 [00:00<?, ?it/s]harmful/ablate:   6%|██████▎                                                                                             | 1/16 [00:04<01:07,  4.53s/it]harmful/ablate:  12%|████████████▌                                                                                       | 2/16 [00:09<01:03,  4.50s/it]harmful/ablate:  19%|██████████████████▊                                                                                 | 3/16 [00:13<00:58,  4.48s/it]harmful/ablate:  25%|█████████████████████████                                                                           | 4/16 [00:17<00:53,  4.48s/it]harmful/ablate:  31%|███████████████████████████████▎                                                                    | 5/16 [00:22<00:49,  4.49s/it]harmful/ablate:  38%|█████████████████████████████████████▌                                                              | 6/16 [00:26<00:44,  4.50s/it]harmful/ablate:  44%|███████████████████████████████████████████▊                                                        | 7/16 [00:31<00:40,  4.49s/it]harmful/ablate:  50%|██████████████████████████████████████████████████                                                  | 8/16 [00:35<00:35,  4.49s/it]harmful/ablate:  56%|████████████████████████████████████████████████████████▎                                           | 9/16 [00:40<00:31,  4.49s/it]harmful/ablate:  62%|█████████████████████████████████████████████████████████████▉                                     | 10/16 [00:44<00:26,  4.48s/it]harmful/ablate:  69%|████████████████████████████████████████████████████████████████████                               | 11/16 [00:49<00:22,  4.50s/it]harmful/ablate:  75%|██████████████████████████████████████████████████████████████████████████▎                        | 12/16 [00:53<00:17,  4.47s/it]harmful/ablate:  81%|████████████████████████████████████████████████████████████████████████████████▍                  | 13/16 [00:58<00:13,  4.48s/it]harmful/ablate:  88%|██████████████████████████████████████████████████████████████████████████████████████▋            | 14/16 [01:02<00:08,  4.47s/it]harmful/ablate:  94%|████████████████████████████████████████████████████████████████████████████████████████████▊      | 15/16 [01:07<00:04,  4.49s/it]harmful/ablate: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:11<00:00,  4.48s/it]harmful/ablate: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:11<00:00,  4.49s/it]
+harmless/base:   0%|                                                                                                             | 0/16 [00:00<?, ?it/s]harmless/base:   6%|██████▎                                                                                              | 1/16 [00:04<01:05,  4.39s/it]harmless/base:  12%|████████████▋                                                                                        | 2/16 [00:08<01:01,  4.36s/it]harmless/base:  19%|██████████████████▉                                                                                  | 3/16 [00:10<00:39,  3.06s/it]harmless/base:  25%|█████████████████████████▎                                                                           | 4/16 [00:11<00:29,  2.44s/it]harmless/base:  31%|███████████████████████████████▌                                                                     | 5/16 [00:16<00:34,  3.13s/it]harmless/base:  38%|█████████████████████████████████████▉                                                               | 6/16 [00:20<00:35,  3.54s/it]harmless/base:  44%|████████████████████████████████████████████▏                                                        | 7/16 [00:24<00:34,  3.80s/it]harmless/base:  50%|██████████████████████████████████████████████████▌                                                  | 8/16 [00:29<00:31,  3.98s/it]harmless/base:  56%|████████████████████████████████████████████████████████▊                                            | 9/16 [00:33<00:28,  4.10s/it]harmless/base:  62%|██████████████████████████████████████████████████████████████▌                                     | 10/16 [00:37<00:25,  4.19s/it]harmless/base:  69%|████████████████████████████████████████████████████████████████████▊                               | 11/16 [00:42<00:21,  4.25s/it]harmless/base:  75%|███████████████████████████████████████████████████████████████████████████                         | 12/16 [00:46<00:17,  4.30s/it]harmless/base:  81%|█████████████████████████████████████████████████████████████████████████████████▎                  | 13/16 [00:51<00:12,  4.32s/it]harmless/base:  88%|███████████████████████████████████████████████████████████████████████████████████████▌            | 14/16 [00:55<00:08,  4.36s/it]harmless/base:  94%|█████████████████████████████████████████████████████████████████████████████████████████████▊      | 15/16 [00:59<00:04,  4.38s/it]harmless/base: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:04<00:00,  4.38s/it]harmless/base: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:04<00:00,  4.02s/it]
+harmless/add:   0%|                                                                                                              | 0/16 [00:00<?, ?it/s]harmless/add:   6%|██████▍                                                                                               | 1/16 [00:04<01:05,  4.36s/it]harmless/add:  12%|████████████▊                                                                                         | 2/16 [00:08<01:01,  4.38s/it]harmless/add:  19%|███████████████████▏                                                                                  | 3/16 [00:13<00:56,  4.38s/it]harmless/add:  25%|█████████████████████████▌                                                                            | 4/16 [00:15<00:42,  3.52s/it]harmless/add:  31%|███████████████████████████████▉                                                                      | 5/16 [00:19<00:42,  3.84s/it]harmless/add:  38%|██████████████████████████████████████▎                                                               | 6/16 [00:24<00:40,  4.01s/it]harmless/add:  44%|████████████████████████████████████████████▋                                                         | 7/16 [00:28<00:37,  4.14s/it]harmless/add:  50%|███████████████████████████████████████████████████                                                   | 8/16 [00:32<00:33,  4.23s/it]harmless/add:  56%|█████████████████████████████████████████████████████████▍                                            | 9/16 [00:37<00:29,  4.28s/it]harmless/add:  62%|███████████████████████████████████████████████████████████████▏                                     | 10/16 [00:41<00:25,  4.31s/it]harmless/add:  69%|█████████████████████████████████████████████████████████████████████▍                               | 11/16 [00:46<00:21,  4.33s/it]harmless/add:  75%|███████████████████████████████████████████████████████████████████████████▊                         | 12/16 [00:50<00:17,  4.35s/it]harmless/add:  81%|██████████████████████████████████████████████████████████████████████████████████                   | 13/16 [00:54<00:13,  4.37s/it]harmless/add:  88%|████████████████████████████████████████████████████████████████████████████████████████▍            | 14/16 [00:59<00:08,  4.37s/it]harmless/add:  94%|██████████████████████████████████████████████████████████████████████████████████████████████▋      | 15/16 [01:03<00:04,  4.37s/it]harmless/add: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:08<00:00,  4.38s/it]harmless/add: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [01:08<00:00,  4.25s/it]
+
+real	4m57.899s
+user	4m51.033s
+sys	0m4.774s
+/scratch/ak13124/attention_dilution/.venv/lib/python3.11/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|                                                                                                  | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 44.50it/s]
+WARNING:root:With reduced precision, it is advised to use `from_pretrained_no_processing` instead of `from_pretrained`.
+WARNING:root:You are not using LayerNorm, so the writing weights can't be centered! Skipping
+harmful/ablate(long):   0%|                                                                                                      | 0/16 [00:00<?, ?it/s]harmful/ablate(long):   6%|█████▉                                                                                        | 1/16 [00:36<09:13, 36.92s/it]harmful/ablate(long):  12%|███████████▊                                                                                  | 2/16 [00:57<06:18, 27.03s/it]harmful/ablate(long):  19%|█████████████████▋                                                                            | 3/16 [01:13<04:47, 22.15s/it]harmful/ablate(long):  25%|███████████████████████▌                                                                      | 4/16 [01:23<03:28, 17.37s/it]harmful/ablate(long):  31%|█████████████████████████████▍                                                                | 5/16 [01:56<04:12, 22.94s/it]harmful/ablate(long):  38%|███████████████████████████████████▎                                                          | 6/16 [02:17<03:44, 22.48s/it]harmful/ablate(long):  44%|█████████████████████████████████████████▏                                                    | 7/16 [02:24<02:35, 17.33s/it]harmful/ablate(long):  50%|███████████████████████████████████████████████                                               | 8/16 [02:59<03:04, 23.07s/it]harmful/ablate(long):  56%|████████████████████████████████████████████████████▉                                         | 9/16 [03:20<02:36, 22.40s/it]harmful/ablate(long):  62%|██████████████████████████████████████████████████████████▏                                  | 10/16 [03:30<01:51, 18.53s/it]harmful/ablate(long):  69%|███████████████████████████████████████████████████████████████▉                             | 11/16 [04:07<02:00, 24.00s/it]harmful/ablate(long):  75%|█████████████████████████████████████████████████████████████████████▊                       | 12/16 [04:31<01:36, 24.25s/it]harmful/ablate(long):  81%|███████████████████████████████████████████████████████████████████████████▌                 | 13/16 [05:08<01:23, 27.94s/it]harmful/ablate(long):  88%|█████████████████████████████████████████████████████████████████████████████████▍           | 14/16 [05:28<00:51, 25.58s/it]harmful/ablate(long):  94%|███████████████████████████████████████████████████████████████████████████████████████▏     | 15/16 [05:35<00:20, 20.03s/it]harmful/ablate(long): 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [06:11<00:00, 24.93s/it]harmful/ablate(long): 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 16/16 [06:11<00:00, 23.25s/it]
+
+real	6m33.306s
+user	6m27.353s
+sys	0m4.617s
+
+real	0m16.598s
+user	0m13.020s
+sys	0m2.657s
+/scratch/ak13124/attention_dilution/.venv/lib/python3.11/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Fetching 28 files:   0%|                                                                                                         | 0/28 [00:00<?, ?it/s]Fetching 28 files:   4%|███▍                                                                                             | 1/28 [00:35<16:11, 35.97s/it]Fetching 28 files:  32%|███████████████████████████████▏                                                                 | 9/28 [01:17<02:25,  7.67s/it]Fetching 28 files:  39%|█████████████████████████████████████▋                                                          | 11/28 [01:17<01:38,  5.79s/it]Fetching 28 files:  39%|█████████████████████████████████████▋                                                          | 11/28 [01:29<01:38,  5.79s/it]Fetching 28 files:  61%|██████████████████████████████████████████████████████████▎                                     | 17/28 [01:59<01:10,  6.42s/it]Fetching 28 files:  89%|█████████████████████████████████████████████████████████████████████████████████████▋          | 25/28 [02:26<00:14,  4.88s/it]Fetching 28 files: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 28/28 [02:26<00:00,  3.87s/it]Fetching 28 files: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 28/28 [02:26<00:00,  5.23s/it]
+WARNING:root:Loading model Qwen/Qwen3-1.7B requires setting trust_remote_code=True
+WARNING:root:Loading model Qwen/Qwen3-1.7B state dict requires setting trust_remote_code=True
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|                                                                                                  | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 44.42it/s]
+Phase 0: Precomputing activations and vectors
+Precomputation completed in 8.69s
+Found 17509 active features
+Phase 1: Running forward pass
+Forward pass completed in 0.14s
+Phase 2: Building input vectors
+Using 3 salient logits with cumulative probability 0.9766
+Will include 4096 of 17509 feature nodes
+Input vectors built in 0.54s
+Phase 3: Computing logit attributions
+sys:1: UserWarning: Full backward hook is firing when gradients are computed with respect to module outputs since no inputs require gradients. See https://docs.pytorch.org/docs/main/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook for more details.
+Logit attributions completed in 0.08s
+Phase 4: Computing feature attributions
+Feature influence computation:   0%|                                                                                           | 0/4096 [00:00<?, ?it/s]Feature influence computation:   2%|█▎                                                                               | 64/4096 [00:00<00:08, 462.84it/s]Feature influence computation:   6%|████▉                                                                          | 256/4096 [00:00<00:03, 1099.45it/s]Feature influence computation:  11%|████████▋                                                                      | 448/4096 [00:00<00:02, 1355.13it/s]Feature influence computation:  16%|████████████▎                                                                  | 640/4096 [00:00<00:02, 1529.72it/s]Feature influence computation:  20%|████████████████                                                               | 832/4096 [00:00<00:02, 1587.36it/s]Feature influence computation:  25%|███████████████████▌                                                          | 1024/4096 [00:00<00:01, 1681.11it/s]Feature influence computation:  30%|███████████████████████▏                                                      | 1216/4096 [00:00<00:01, 1717.74it/s]Feature influence computation:  34%|██████████████████████████▊                                                   | 1408/4096 [00:00<00:01, 1642.42it/s]Feature influence computation:  39%|██████████████████████████████▍                                               | 1600/4096 [00:01<00:01, 1585.31it/s]Feature influence computation:  45%|███████████████████████████████████▎                                          | 1856/4096 [00:01<00:01, 1591.25it/s]Feature influence computation:  50%|███████████████████████████████████████                                       | 2048/4096 [00:01<00:01, 1660.47it/s]Feature influence computation:  55%|██████████████████████████████████████████▋                                   | 2240/4096 [00:01<00:01, 1575.56it/s]Feature influence computation:  59%|██████████████████████████████████████████████▎                               | 2432/4096 [00:01<00:01, 1500.93it/s]Feature influence computation:  64%|█████████████████████████████████████████████████▉                            | 2624/4096 [00:01<00:01, 1448.94it/s]Feature influence computation:  69%|█████████████████████████████████████████████████████▋                        | 2816/4096 [00:01<00:00, 1536.90it/s]Feature influence computation:  73%|█████████████████████████████████████████████████████████▎                    | 3008/4096 [00:01<00:00, 1455.65it/s]Feature influence computation:  78%|████████████████████████████████████████████████████████████▉                 | 3200/4096 [00:02<00:00, 1379.34it/s]Feature influence computation:  83%|████████████████████████████████████████████████████████████████▌             | 3392/4096 [00:02<00:00, 1314.86it/s]Feature influence computation:  88%|████████████████████████████████████████████████████████████████████▎         | 3584/4096 [00:02<00:00, 1446.20it/s]Feature influence computation:  92%|███████████████████████████████████████████████████████████████████████▉      | 3776/4096 [00:02<00:00, 1346.39it/s]Feature influence computation:  97%|███████████████████████████████████████████████████████████████████████████▌  | 3968/4096 [00:02<00:00, 1262.57it/s]Feature influence computation: 100%|██████████████████████████████████████████████████████████████████████████████| 4096/4096 [00:02<00:00, 1449.62it/s]
+Feature attributions completed in 2.83s
+Attribution completed in 19.26s
+Phase 0: Precomputing activations and vectors
+Precomputation completed in 3.26s
+Found 14539 active features
+Phase 1: Running forward pass
+Forward pass completed in 0.12s
+Phase 2: Building input vectors
+Using 3 salient logits with cumulative probability 0.9805
+Will include 4096 of 14539 feature nodes
+Input vectors built in 0.44s
+Phase 3: Computing logit attributions
+Logit attributions completed in 0.03s
+Phase 4: Computing feature attributions
+Feature influence computation:   0%|                                                                                           | 0/4096 [00:00<?, ?it/s]Feature influence computation:   5%|███▋                                                                           | 192/4096 [00:00<00:02, 1917.53it/s]Feature influence computation:  11%|████████▋                                                                      | 448/4096 [00:00<00:01, 1998.94it/s]Feature influence computation:  17%|█████████████▌                                                                 | 704/4096 [00:00<00:01, 2044.45it/s]Feature influence computation:  23%|██████████████████▌                                                            | 960/4096 [00:00<00:01, 1977.90it/s]Feature influence computation:  30%|███████████████████████▏                                                      | 1216/4096 [00:00<00:01, 1908.61it/s]Feature influence computation:  34%|██████████████████████████▊                                                   | 1408/4096 [00:00<00:01, 1887.95it/s]Feature influence computation:  39%|██████████████████████████████▍                                               | 1600/4096 [00:00<00:01, 1809.67it/s]Feature influence computation:  45%|███████████████████████████████████▎                                          | 1856/4096 [00:01<00:01, 1750.60it/s]Feature influence computation:  50%|███████████████████████████████████████                                       | 2048/4096 [00:01<00:01, 1786.77it/s]Feature influence computation:  55%|██████████████████████████████████████████▋                                   | 2240/4096 [00:01<00:01, 1697.58it/s]Feature influence computation:  59%|██████████████████████████████████████████████▎                               | 2432/4096 [00:01<00:01, 1641.75it/s]Feature influence computation:  64%|█████████████████████████████████████████████████▉                            | 2624/4096 [00:01<00:00, 1586.02it/s]Feature influence computation:  69%|█████████████████████████████████████████████████████▋                        | 2816/4096 [00:01<00:00, 1657.89it/s]Feature influence computation:  73%|█████████████████████████████████████████████████████████▎                    | 3008/4096 [00:01<00:00, 1562.50it/s]Feature influence computation:  78%|████████████████████████████████████████████████████████████▉                 | 3200/4096 [00:01<00:00, 1490.68it/s]Feature influence computation:  83%|████████████████████████████████████████████████████████████████▌             | 3392/4096 [00:02<00:00, 1403.23it/s]Feature influence computation:  89%|█████████████████████████████████████████████████████████████████████▍        | 3648/4096 [00:02<00:00, 1393.87it/s]Feature influence computation:  94%|█████████████████████████████████████████████████████████████████████████▏    | 3840/4096 [00:02<00:00, 1508.01it/s]Feature influence computation:  98%|████████████████████████████████████████████████████████████████████████████▊ | 4032/4096 [00:02<00:00, 1415.19it/s]Feature influence computation: 100%|██████████████████████████████████████████████████████████████████████████████| 4096/4096 [00:02<00:00, 1632.84it/s]
+Feature attributions completed in 2.51s
+Attribution completed in 13.28s
+
+real	5m26.835s
+user	2m52.670s
+sys	1m35.782s
+
+real	0m8.469s
+user	0m8.598s
+sys	0m8.333s
