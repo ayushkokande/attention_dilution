@@ -222,7 +222,7 @@ def main() -> None:
 
     if not refusal_path.is_file() or not activations_path.is_file():
         raise FileNotFoundError(
-            "Run src/extract_refusal_direction.py first to produce "
+            "Run ayush/extract_refusal_direction.py first to produce "
             f"{refusal_path} and {activations_path}."
         )
     payload = _load_torch(refusal_path)

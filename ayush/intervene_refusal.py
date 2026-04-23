@@ -78,7 +78,7 @@ def main() -> None:
     directions_path = results_dir() / "refusal_directions.pt"
     if not directions_path.is_file():
         raise FileNotFoundError(
-            f"{directions_path} not found. Run src/extract_refusal_direction.py first."
+            f"{directions_path} not found. Run ayush/extract_refusal_direction.py first."
         )
     payload = torch.load(directions_path, map_location="cpu", weights_only=False)
 

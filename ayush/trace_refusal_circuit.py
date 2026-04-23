@@ -252,7 +252,7 @@ def main() -> None:
     print(f"\nWrote {index_path}")
     print(
         f"\nTo view the graphs interactively, run:\n"
-        f"  python src/visualize_refusal_graph.py --data-dir {graph_files_dir}"
+        f"  python ayush/visualize_refusal_graph.py --data-dir {graph_files_dir}"
     )
 
 

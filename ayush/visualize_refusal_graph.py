@@ -1,6 +1,6 @@
 """Thin wrapper that starts a local ``circuit-tracer`` visualization server.
 
-After running ``src/trace_refusal_circuit.py`` you will have pruned JSON graph
+After running ``ayush/trace_refusal_circuit.py`` you will have pruned JSON graph
 files in ``results/<slug>/graph_files/``. Point this script at that directory
 to browse and annotate the graphs.
 """
@@ -32,7 +32,7 @@ def main() -> None:
     data_dir = args.data_dir or (results_dir() / "graph_files")
     if not data_dir.is_dir():
         raise FileNotFoundError(
-            f"{data_dir} not found. Run `python src/trace_refusal_circuit.py` first."
+            f"{data_dir} not found. Run `python ayush/trace_refusal_circuit.py` first."
         )
 
     server = serve(data_dir=str(data_dir), port=args.port)
