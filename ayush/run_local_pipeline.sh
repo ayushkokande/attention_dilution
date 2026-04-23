@@ -1,5 +1,5 @@
 #!/bin/bash
-# Local counterpart of sbatch_ayush_pipeline.sh for running the refusal-mech
+# Local counterpart of sbatch_refusal_pipeline.sh for running the refusal-mech
 # pipeline on a dev box (macOS / Apple Silicon MPS or a local CUDA GPU).
 #
 # No Slurm, no Singularity. Assumes the repo's .venv already has the pinned
@@ -25,6 +25,10 @@ RUN_ABLATE_LONG=${RUN_ABLATE_LONG:-1}
 RUN_VISUALIZE_DIR=${RUN_VISUALIZE_DIR:-1}
 RUN_TRACE=${RUN_TRACE:-0}
 RUN_FEATURE_INTERVENE=${RUN_FEATURE_INTERVENE:-0}
+# Phase 2: context scaling sweep. Default off locally because long-context
+# forward passes on MPS are very slow; flip to 1 when you have the time.
+RUN_SCALING_SWEEP=${RUN_SCALING_SWEEP:-0}
+RUN_VISUALIZE_SCALING=${RUN_VISUALIZE_SCALING:-0}
 RUN_VISUALIZE_STEER=${RUN_VISUALIZE_STEER:-1}
 
 if [ ! -x .venv/bin/python ]; then
@@ -40,7 +44,7 @@ export TRANSFORMERLENS_ALLOW_MPS=1
 
 mkdir -p logs
 
-echo "=== ayush_pipeline (local) | pid $$ | $(date -u +%FT%TZ) ==="
+echo "=== refusal_pipeline (local) | pid $$ | $(date -u +%FT%TZ) ==="
 echo "Repo: ${REPO_ROOT}"
 ${PY} -c 'import torch; print("torch", torch.__version__, "mps", torch.backends.mps.is_available(), "cuda", torch.cuda.is_available())'
 
@@ -56,6 +60,10 @@ run_step() {
 [ "${RUN_INTERVENE}" = "1" ]        && run_step intervene_refusal      "${PY}" ayush/intervene_refusal.py
 [ "${RUN_ABLATE_LONG}" = "1" ]      && run_step intervene_ablate_long  "${PY}" ayush/intervene_ablate_long.py
 [ "${RUN_VISUALIZE_DIR}" = "1" ]    && run_step visualize_direction    "${PY}" ayush/visualize_refusal_direction.py
+=======
+[ "${RUN_SCALING_SWEEP}" = "1" ]    && run_step scaling_sweep          "${PY}" ayush/sweep_context_scaling.py
+[ "${RUN_VISUALIZE_SCALING}" = "1" ] && run_step visualize_scaling      "${PY}" ayush/visualize_scaling.py
+>>>>>>> 0b70ed7c7a820896952e4d120dd3a71cd098e03e
 [ "${RUN_TRACE}" = "1" ]            && run_step trace_refusal_circuit  "${PY}" ayush/trace_refusal_circuit.py
 [ "${RUN_FEATURE_INTERVENE}" = "1" ] && run_step intervene_features     "${PY}" ayush/intervene_refusal_features.py
 [ "${RUN_VISUALIZE_STEER}" = "1" ]  && run_step visualize_steering     "${PY}" ayush/visualize_steering.py

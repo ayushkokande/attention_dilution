@@ -85,7 +85,33 @@ onto the direction, a layer-by-layer cosine heatmap, a 2D PCA view at the
 best layer, and a bar chart of refusal rates across intervention conditions
 (including the circuit-tracer feature ablation if step 6 has been run).
 
-### 5. Circuit-level attribution with `circuit-tracer`
+### 5. Context-length scaling sweep (Phase 2)
+
+```bash
+python ayush/sweep_context_scaling.py
+python ayush/visualize_scaling.py
+```
+
+`sweep_context_scaling.py` iterates over a held-out slice of AdvBench
+harmful prompts and, for each bloat length
+`N ∈ {0, 128, 512, 1k, 2k, 4k, 8k}` (Willowbrook preamble prepended to the
+prompt), captures one hooked forward pass and one greedy generation. It
+records, per (prompt, N):
+
+- attention mass from the final input position to every `(layer, head)`
+  across the harmful token span (attention dilution, H1),
+- residual-stream projection onto `r̂^(ℓ)` at the last harmful token and at
+  the final input position (representational dilution, H2),
+- the greedy response and keyword-based refusal label (ASR).
+
+Outputs land under `results/<slug>/scaling/`:
+`sweep_rows.jsonl` (raw rows) and `summary.csv` (per-N aggregates).
+`visualize_scaling.py` then emits `scaling_asr.png`,
+`scaling_refusal_projection.png`, and `scaling_attn_dilution.png`
+(per-head decay at the best refusal layer, with the top-K heads at N=0
+highlighted as candidate guardrail heads).
+
+### 6. Circuit-level attribution with `circuit-tracer`
 
 ```bash
 python ayush/trace_refusal_circuit.py
@@ -109,7 +135,7 @@ python ayush/visualize_refusal_graph.py --port 8046
 # then open http://localhost:8046/index.html
 ```
 
-### 6. Feature-level intervention
+### 7. Feature-level intervention
 
 After inspecting the graphs and picking candidate refusal features, record
 them in `results/qwen3-1.7b/refusal_features.json`:
@@ -147,10 +173,13 @@ ayush/
   intervene_ablate_long.py        # ablate with longer generations
   visualize_refusal_direction.py  # projection + separation plots
   visualize_steering.py           # summary / cosine / PCA / bar-chart figures
+  sweep_context_scaling.py        # Phase 2: context-length scaling sweep
+  visualize_scaling.py            # Phase 2 plots (ASR / projection / attn dilution)
   trace_refusal_circuit.py        # circuit-tracer attribution graphs
   visualize_refusal_graph.py      # wrapper around circuit-tracer's server
   intervene_refusal_features.py   # zero specific transcoder features
 results/<model_slug>/             # all artefacts keyed by model slug
+results/<model_slug>/scaling/     # sweep_rows.jsonl + summary.csv + Phase 2 plots
 ```
 
 ## Switching models
