@@ -18,7 +18,7 @@ We follow Arditi et al. (2024) for the refusal direction and extend their framew
 V_refusal^(ℓ) = mean(h^(ℓ) | harmful) − mean(h^(ℓ) | harmless)
 ```
 
-We pick the best layer by sweeping a directional-ablation hook (project out V_refusal at every residual-stream write) and choosing the ℓ that maximizes the drop in refusal rate on a held-out harmful set. For Qwen3-1.7B this is layer 14 — almost exactly the 50% depth that Arditi reports for similarly-sized models.
+We pick the best layer by sweeping a directional-ablation hook (project out V_refusal at every residual-stream write) and choosing the ℓ that maximizes the drop in refusal rate on a held-out harmful set. For Qwen3-1.7B this is layer 12 (out of 28, ~43% depth) — consistent with Arditi's report that the refusal direction is most causally effective in the middle of the network.
 
 The figure below shows the layer-wise separation score (the L2 norm of the difference-of-means vector at each layer). The score rises sharply through the early layers, peaks in the middle of the network, and decays toward the output — the classic signature of a refusal representation that is computed mid-network and read off downstream.
 
@@ -29,7 +29,7 @@ The figure below shows the layer-wise separation score (the L2 norm of the diffe
 **Phase 2 — context scaling.** We sweep N ∈ {0, 128, 512, 1k, 2k, 4k, 8k, 16k} tokens of benign creative-writing bloat prepended before each harmful request. For every N and every prompt we measure three quantities at the final generation position:
 
 - **H1 (attention dilution):** the mean fraction of attention mass that the Guardrail Heads put on the harmful-request span. Because the harmful tokens move position as N grows, we re-locate the span at each N using the tokenizer's character-offset map rather than by literal BPE matching.
-- **H2 (representational dilution):** cosine similarity between the residual stream at the last harmful-token position (layer 14) and V_refusal.
+- **H2 (representational dilution):** cosine similarity between the residual stream at the last harmful-token position (layer 12) and V_refusal.
 - **Behavior:** refusal rate from greedy generation, scored by a substring detector over the first 200 generated characters.
 
 Because storing the full `[1, 16, T, T]` attention pattern OOMs an A100 above N≈4k, H1 is measured with reduce-on-the-fly hooks (the hook computes the mass and discards the pattern), and is disabled entirely above N=4096. The sweep is two-pass per N (measurement, then generation) with per-N try/except so an OOM at N=8192 leaves a `status='OOM'` row in `phase2_scaling.csv` rather than corrupting the rest of the run.
@@ -61,7 +61,7 @@ This is consistent with Zhao et al. (NeurIPS 2025), who report that harmfulness 
 
 A useful framing: **the failure mode is attentional, not representational.** That is a good thing for interpretability work, because attentional failures are local and patchable (you can re-weight specific heads, or steer the residual stream after the heads have failed to write to it), whereas representational collapse would require retraining. It is also an uncomfortable finding for safety: it means the refusal behavior measured at short context overstates the real safety margin of a deployed long-context model, and the gap widens smoothly with N rather than waiting for some adversarial prompt structure.
 
-If H3 (Phase 3 activation steering) confirms that injecting α·V_refusal at layer 14 rescues refusal at long N, that closes the loop: dilution removes the heads' write, manual injection puts the write back, and the model refuses again.
+If H3 (Phase 3 activation steering) confirms that injecting α·V_refusal at layer 12 rescues refusal at long N, that closes the loop: dilution removes the heads' write, manual injection puts the write back, and the model refuses again.
 
 ## Limitations
 
