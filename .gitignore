@@ -1,6 +1,5 @@
 # Local data and experiment outputs
 data/
-results/
 
 # Python
 __pycache__/
