@@ -1,20 +1,8 @@
-"""Build the 2x2 (intent x topic) factorial prompt pools for experiment 6.
+"""Build the exploratory intent-by-topic pools.
 
-Pools (50 prompts/cell, 200 total):
-  harmful_edgy_topic.jsonl     intent=1 topic=1   AdvBench[0:50] raw
-  harmful_mundane_topic.jsonl  intent=1 topic=0   manual_harmful_mundane.json
-  harmless_edgy_topic.jsonl    intent=0 topic=1   manual_harmless_edgy.json
-  harmless_mundane_topic.jsonl intent=0 topic=0   Alpaca[200:250] post-filter
-
-Alpaca slice [200:250] is disjoint from exp_2 d_hat training pool [0:100]
-and from exp_7 harmless pool [100:150] (kills the eval leak flagged in
-splits.json:overlap_warnings). Filter matches exp_2's canonical
-experiment_1.utils.load_harmless_prompts: empty-input rows only,
-filtered through _harmless_instruction_is_clean.
-
-Both manual files are JSON lists of {index, prompt}. Empty `prompt` fields
-must be filled in before this script will succeed (use --allow-partial to
-emit only filled rows for an early dry run).
+The harmless mundane cell uses canonical filtered Alpaca[600:650), outside
+core training, validation, and test ranges. Historical [200:250) pools
+must be rebuilt: they overlap the expanded direction training pool.
 """
 
 from __future__ import annotations
@@ -73,28 +61,13 @@ def fetch_alpaca_rows(n: int, start: int = 0) -> list[str]:
     filter exp_2 uses for d_hat training pool, so a `start` offset properly
     excludes prior cells.
     """
-    from datasets import load_dataset
-    from utils import _harmless_instruction_is_clean  # type: ignore
-
-    ds = load_dataset("tatsu-lab/alpaca", split="train")
-    out: list[str] = []
-    skipped = 0
-    for row in ds:
-        inp = row.get("input", None)
-        if inp not in ("", None):
-            continue
-        instr = str(row["instruction"]).strip()
-        if not instr:
-            continue
-        if not _harmless_instruction_is_clean(instr):
-            continue
-        if skipped < start:
-            skipped += 1
-            continue
-        out.append(instr)
-        if len(out) >= n:
-            break
-    return out
+    from utils import load_harmless_prompts
+    if n <= 0 or start < 0:
+        raise ValueError("Invalid Alpaca slice")
+    rows = load_harmless_prompts(start + n)
+    if len(rows) < start + n:
+        raise ValueError("Alpaca source does not contain the requested slice")
+    return rows[start:start + n]
 
 
 def load_manual(path: Path) -> list[dict]:
@@ -127,10 +100,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--alpaca-start",
         type=int,
-        default=200,
+        default=600,
         help="Post-filter Alpaca offset for harmless_mundane cell. "
-             "Default 200 = disjoint from exp_2 d_hat training [0:100] and "
-             "exp_7 harmless [100:150]. Was 0 pre-cascade (eval leak).",
+             "Default 600 lies outside core train/validation/test ranges. "
+             "Historical [200:250) pools must be rebuilt.",
     )
     return p.parse_args()
 
@@ -235,3 +208,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
