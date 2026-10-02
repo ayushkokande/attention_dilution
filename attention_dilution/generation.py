@@ -10,13 +10,15 @@ from .shared import check_context_budget, looks_like_refusal, strip_think_block
 
 def generate_dataset(model, tokenizer, chat_prompts, source_prompts, *, device,
                      batch_size, max_new_tokens, temperature, context_budget,
-                     path: Path, resume=False) -> list[dict]:
+                     path: Path, resume=False, case_metadata=None) -> list[dict]:
     import torch
 
     if batch_size <= 0 or max_new_tokens <= 0 or temperature < 0:
         raise ValueError("Batch size/output length must be positive; temperature non-negative")
     if len(chat_prompts) != len(source_prompts):
         raise ValueError("Source and formatted prompt counts differ")
+    if case_metadata is not None and len(case_metadata) != len(source_prompts):
+        raise ValueError("Case metadata count does not match prompts")
     if resume and temperature > 0:
         raise ValueError("Sampling resumes are not supported; start a new run")
     rows = []
@@ -31,6 +33,10 @@ def generate_dataset(model, tokenizer, chat_prompts, source_prompts, *, device,
                     raise ValueError("Saved results contain too many prompts")
                 if row["index"] != index or row["prompt"] != source_prompts[index]:
                     raise ValueError(f"Saved results do not match prompts at index {index}")
+                if row.get("chat_prompt") != chat_prompts[index]:
+                    raise ValueError(f"Saved formatted prompt changed at index {index}")
+                if row.get("case") != (case_metadata[index] if case_metadata is not None else None):
+                    raise ValueError(f"Saved case metadata changed at index {index}")
                 rows.append(row)
     if len(rows) > len(source_prompts):
         raise ValueError("Saved results contain too many prompts")
@@ -79,6 +85,9 @@ def generate_dataset(model, tokenizer, chat_prompts, source_prompts, *, device,
                                "status": "error", "error": repr(exc), "refused": None}
                               for offset in range(len(batch))]
             for row in batch_rows:
+                index = row["index"]
+                row["chat_prompt"] = chat_prompts[index]
+                row["case"] = case_metadata[index] if case_metadata is not None else None
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
                 handle.flush()
                 rows.append(row)

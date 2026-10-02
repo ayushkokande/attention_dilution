@@ -302,3 +302,29 @@ def directional_ablation(model, direction):
     finally:
         for handle in handles:
             handle.remove()
+
+
+@contextmanager
+def directional_addition(model, direction, layer, alpha):
+    """Add alpha activation units of a unit vector at one block's output.
+
+    Applies to all tokens in prefill and decoding, including cached decoding
+    calls. This operation does not flip or erase an existing projection.
+    """
+    if not 0 <= layer < len(model.model.layers) or not math.isfinite(alpha):
+        raise ValueError("Invalid steering layer or coefficient")
+    directions = {}
+
+    def hook(module, inputs, output):
+        hidden = output[0] if isinstance(output, tuple) else output
+        key = (hidden.device, hidden.dtype)
+        if key not in directions:
+            directions[key] = direction.to(device=hidden.device, dtype=hidden.dtype)
+        changed = hidden + alpha * directions[key]
+        return (changed,) + output[1:] if isinstance(output, tuple) else changed
+
+    handle = model.model.layers[layer].register_forward_hook(hook)
+    try:
+        yield
+    finally:
+        handle.remove()

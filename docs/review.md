@@ -36,9 +36,8 @@ The maintained README and experiment descriptions use the more limited framing. 
 
 ## What remains in the study
 
-Run the four core stages on one model, one inert prefix, and one explicit split. Report per-prompt measurements and uncertainty. Compare the request-token projection with the readout-token projection, and keep intact and ablated behavior separate.
+The follow-up in [revision_protocol.md](revision_protocol.md) supersedes the earlier prefix-only recommendation. Keep the four model stages, but use a small set of explicit-target contexts, full answer review, and paired representation measurements. An inert prefix remains a control. Target scheduling must be separated from target unsafe behavior before an intervention claim.
 
-Do not add mitigation training, a multi-model survey, circuit tracing, or steering rescue to the initial scope. A stronger follow-up would first verify the target responses in the multi-request condition, match request positions between conditions, and test behavioral recovery under specific head or edge interventions. Discover heads on one pool and confirm on a separate pool.
+Greg Durrett's feedback identifies the sign change as a possible focus, conditional on systematic evidence. Calibrated steering and a second-model confirmation are conditional follow-ups, rather than a broad survey or automatic next phase. Remove the style/topic/policy battery and two-head interpretation from the main argument until their individual claims have adequate support.
 
 The refactor does not claim a new experimental result. Historical curves remain available, and the new protocol needs fresh model runs before its outputs can replace them.
-

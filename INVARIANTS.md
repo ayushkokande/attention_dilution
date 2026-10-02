@@ -1,19 +1,20 @@
 # Core experiment settings
 
-The maintained study has four stages: baseline, direction extraction, inert-prefix context sweep, and residual projection sweep. The commands are in [README.md](README.md).
+The maintained study asks whether added benign context changes a fixed harmful-versus-harmless direction, and whether that change predicts the answer to the target request. Baseline, direction, context, and projection remain the four model stages. Offline response review is a prerequisite for behavioral claims. The follow-up protocol is in [docs/revision_protocol.md](docs/revision_protocol.md).
 
 - Default model: `Qwen/Qwen3-14B`. Smoke runs may use another Qwen3 model, but direction and evaluation model revisions must match.
 - Chat template: one user message; `enable_thinking=False` unless explicitly requested throughout a run.
-- Refusal scoring: the same 18-phrase, first-200-character heuristic in `attention_dilution/shared.py`. A missing refusal phrase is not a verified harmful answer.
-- Generation: 256 output tokens, greedy decoding by default. The same judge is used for layer selection and behavioral evaluation.
+- Refusal scoring: retain the 18-phrase, first-200-character heuristic as a diagnostic and direction-selection proxy. Target refusal, safe answer, unsafe answer, failure to address the target, and uncertainty are separate human labels. Neither the prefix heuristic nor whole-answer phrase matching establishes harmful compliance.
+- Generation: context runs allow 512 output tokens by default, greedily decoded. Save the entire answer, exact templated prompt, target location, and truncation status. A short answer to an earlier benign task is not target compliance.
 - Directions: difference of harmful and harmless means at each decoder block's output, at the last token of the full chat template.
-- Intervention: remove a selected unit direction at each decoder block's output. This differs from the exploratory three-site TransformerLens intervention.
+- Intervention: ablation is `h_new = h - (h dot d_hat) * d_hat`, at every token of every decoder block's output during prefill and decoding. The selected layer is where the vector was extracted, not the only intervention site. Steering is `h_new = h + alpha * d_hat` at every token of one named block's output. These differ from the exploratory three-site TransformerLens intervention. Record alpha in activation units; tune it on validation examples, not the test set. A seeded random unit vector is a control, not another learned refusal direction.
 - Selected layer: read it from the freshly extracted `meta.json`; do not hard-code historical L36.
 - Splits: read the `core` section of `splits.json`, validate its ranges, and compare the actual training, validation, and test prompt strings.
-- Context: one unchanged inert filler passage, followed by the request. Default filler lengths are 0, 128, 512, 1024, 2048, 4096, 8192, and 16384.
+- Context: prefix, quoted background, and lists that explicitly request only the target answer. Ordered multi-task lists are a scheduling diagnostic. Use two fixed background sources and first/last target positions as controls. Empty-context prompts retain each format's instructions. Record actual tokens and task counts: a nominal filler budget does not make all wrappers position-matched.
+- Evaluation: AdvBench/filtered Alpaca held-out pools or JailbreakBench harmful/benign pools. Optional JSONL inputs require an ID, prompt, kind, and source. With a direction run, exclude exact normalized training/validation duplicates and record exclusions; semantic overlap across benchmarks still needs review. Freeze and record the actual retained prompts.
 - Budget: the full templated input plus the output allowance must fit inside the 32768-token default budget. 32768 filler tokens alone do not fit.
-- Measurements: distinguish the last request token from the last chat-template token. Projection runs measure both.
+- Measurements: distinguish the last request token from the last chat-template token. Projection runs measure both, using the same contexts as generation. Save per-request dot product, norm, cosine, sign, and paired change from the matching empty-context condition. A mean crossing zero is not evidence that each request changed sign. Cosine and dot product have the same sign for the same nonzero vector and direction.
 - Outputs: new runs belong in `runs/`, with input prompts, settings, artifact hashes, and model/package versions. An explicit resume must match the saved configuration.
-- Claims: report observed behavior and projections. These measurements alone do not establish a particular attention mechanism or a two-head circuit.
+- Claims: a geometric sign change does not establish unsafe behavior, harmfulness recognition, a unique refusal mechanism, or capability preservation. If a sign change survives coverage/position controls, confirm it on held-out benchmark prompts and a second model before making a broader claim. Do not run head tracing or the style/topic/policy battery as prerequisites.
 
 The existing `results/`, `Suraj/results_v3/`, and paper PDFs are historical artifacts. Their different pools, judges, interventions, and generation lengths are documented in [docs/review.md](docs/review.md). They must not be relabeled as results of this refactor.

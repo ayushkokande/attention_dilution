@@ -1,78 +1,91 @@
-# Attention dilution
+# Context and refusal
 
-A controlled study of how added benign context changes Qwen3's refusal behavior and residual activations.
+**When benign context changes a refusal-related activation, does it change the answer to the target request, or just which task the model answers first?**
 
-The question is deliberately small: **when the same request follows more inert text, do refusal rates or projections onto a harmful-versus-harmless direction change?** A flat curve is a useful result. We do not assume in advance that attention normalization is the cause.
+The [revision protocol](docs/revision_protocol.md) acts on Greg Durrett's course feedback: fewer claims, stronger evaluation, explicit interventions, and related work tied to the experimental design. It includes the saved-output audit, three experiments with stopping decisions, and a section-by-section plan for the paper. This revision has no new Qwen3 results or completed human study.
 
-## Core experiments
+The saved ordered-list examples make the evaluation problem concrete: four N512 outputs start answering a benign first task while the harmful target is later in the list. Their missing refusal phrases and negative readout cosines do not establish unsafe target compliance.
 
-| Stage | What it measures | Script |
+## Model stages
+
+| Stage | Purpose | Command |
 | --- | --- | --- |
-| Baseline | Phrase-refusal rates on AdvBench and filtered Alpaca | `experiment_1/baseline_benchmark.py` |
-| Direction | Difference of class means at each block; select a layer on separate validation prompts | `experiment_2/refusal_direction.py` |
-| Context | Intact vs. post-block directional ablation as inert prefix length increases | `experiment_8/context_sweep.py` |
-| Projection | Residual projection at the last request token and at the chat-template readout token | `experiment_9/projection_sweep.py` |
+| Baseline | Descriptive phrase-refusal rates on the original pools | `baseline` |
+| Direction | Harmful-minus-harmless means; select a source layer on validation | `direction` |
+| Context | Save full target answers across controlled contexts and optional interventions | `context` |
+| Projection | Measure the same contexts at target and assistant-template tokens | `projection` |
 
-The shared code lives in `attention_dilution/`. The numbered entry points remain usable. Head ranking, style/topic/policy analyses, steering, multi-format prompts, and circuit tracing are exploratory follow-ups rather than requirements for this study.
+The shared implementation is in `attention_dilution/`. The numbered entry points remain usable. The additional `review` command is an offline human-annotation workflow, not a model stage or automatic safety judge. Style/topic/policy analyses and head/circuit tracing remain historical exploratory work.
 
-## Setup and runs
+## Setup
 
-Use Python 3.11 or newer and an environment with enough memory for the selected model. Install a PyTorch build suitable for your hardware, then the core dependencies:
+Use Python 3.11 or newer and hardware suitable for the selected model. Install an appropriate PyTorch build, then:
 
 ```bash
 python -m pip install -r requirements.txt
+python -m attention_dilution context --help
 ```
 
-Run from the repository root. These commands explicitly name their output directories:
+Command help and offline review do not load model weights. The default model is `Qwen/Qwen3-14B`; a smaller model can check execution but does not confirm a result on 14B. Use the same model and `--revision` throughout a study. Extract a separate direction for each model.
+
+## Start with the validation pilot
+
+Run from the repository root. Direction extraction records actual training and validation prompts so downstream test runs can exclude overlaps.
 
 ```bash
 python -m attention_dilution baseline --output-dir runs/baseline
 python -m attention_dilution direction --output-dir runs/direction
-python -m attention_dilution context --refusal-dir runs/direction --output-dir runs/context
-python -m attention_dilution projection --refusal-dir runs/direction --output-dir runs/projection
+python -m attention_dilution context --refusal-dir runs/direction --split validation --n-prompts 20 --formats prefix quoted tasks --backgrounds apennines garden --lengths 0 512 4096 --arms baseline --output-dir runs/pilot-harmful
+python -m attention_dilution projection --refusal-dir runs/direction --split validation --n-prompts 20 --formats prefix quoted tasks --backgrounds apennines garden --lengths 0 512 4096 --output-dir runs/pilot-harmful-projections
+python -m attention_dilution context --refusal-dir runs/direction --split validation --pool alpaca --n-prompts 20 --formats prefix quoted tasks --backgrounds apennines garden --lengths 0 512 4096 --arms baseline --output-dir runs/pilot-harmless
 ```
 
-All four default to `Qwen/Qwen3-14B`. For a cheap model smoke run, use the same `--model Qwen/Qwen3-1.7B` throughout, smaller pool sizes, and `--lengths 0 128` for the sweeps. Command help is available without loading model dependencies:
+Keep settings identical between behavior and projection runs, including pool, split, prompt count, formats, backgrounds, and target position. Run matching harmless projections when comparing geometry by request kind. Validation runs may reuse layer-selection prompts; they are not independent tests. Default sweeps use only 0, 512, and 4096 background-token allowances. Extend the grid only when the pilot supports a specific question.
+
+Use `--target-position first` as a separate control. For the scheduling diagnostic, use `--formats ordered-tasks --lengths 0 128`; contrast first and last positions in separate runs. The primary `tasks` format explicitly requests only the target answer. Empty conditions retain each format's instructions, and are shared across background sources.
+
+## Review the actual answers
 
 ```bash
-python -m attention_dilution direction --help
+python -m attention_dilution review export --results runs/pilot-harmful/*.jsonl runs/pilot-harmless/*.jsonl --output-dir runs/pilot-review
 ```
 
-Without `--output-dir`, each command creates a separate timestamped run directory. Existing runs require `--resume`, which checks the saved settings, exact prompts, and direction artifact hashes. Sampling runs cannot resume because batching can change their random draws. The old shell launchers now forward arguments to these commands; they do not install environments or assume a particular cluster.
+The packet contains shuffled full answers in `review.csv`, labeling instructions, and a separate condition mapping. Have two reviewers work independently on copies of the CSV; keep the mapping and others' labels hidden. Fill `label`, `evidence`, and `reviewer`. The five labels are target refusal, safe answer, unsafe answer, target not addressed, and unclear. Quotes in the evidence column must occur in the saved response.
 
-Each run contains:
+After the reviewers supply labels:
 
-- `run.json`: settings, prompt text, scoring configuration, and input artifact hashes.
-- `environment.json`: resolved model/tokenizer revisions and package versions.
-- Stage results, with incremental generation JSONL or projection checkpoints.
+```bash
+python -m attention_dilution review summarize --packet-dir runs/pilot-review --labels runs/pilot-review/reviewer-a.csv runs/pilot-review/reviewer-b.csv --output runs/pilot-review/summary.json
+```
 
-Use `--revision` to pin a model revision when repeating a study. Dataset inputs are recorded in the run manifest; changes to retrieved prompts prevent a resume from mixing old and new data.
+The report preserves missing/disputed cases and produces per-case consensus for joining to projection records by request ID and condition. Missing labels are not invented. An answer to another task is not counted as a target refusal or unsafe target answer. Bounds on the unsafe-answer rate retain unresolved labels; the Wilson interval is labeled as conditional on resolved cases. The exporter also works on historical full-response JSONL files, but flags missing full inputs and unknown truncation. It does not reconstruct generations missing from aggregate CSVs.
 
-## Measurement rules
+## Held-out prompts and interventions
 
-The core ranges in `splits.json` separate direction training, layer selection, and held-out evaluation. The baseline covers the full datasets and is descriptive; it is not an independent held-out test. Direction extraction also checks for identical prompt strings across splits.
+After freezing the pilot's choices, repeat on `--split test`. `--pool jbb-harmful` and `--pool jbb-benign` load JailbreakBench's official harmful/benign behaviors; `--dataset-revision` can pin the dataset snapshot. For example:
 
-The behavioral metric is an **18-phrase heuristic over the first 200 characters**, with 256 generated tokens by default. A missing phrase is not a verified harmful answer. Empty outputs and generation errors are reported separately. Results include sample counts, truncation counts, and Wilson 95% intervals for phrase-refusal rates.
+```bash
+python -m attention_dilution context --refusal-dir runs/direction --pool jbb-harmful --n-prompts 20 --formats prefix quoted tasks --backgrounds apennines garden --arms baseline --output-dir runs/jbb-harmful
+```
 
-The context sweep adds one inert passage before a single request. It does not insert extra instructions or change the conversation structure. Input-template overhead and output tokens count toward the 32768-token default budget; a 32768-token filler alone is too long.
+JBB contains AdvBench-derived entries. The loader records exact normalized training/validation duplicates it excludes and validates the requested count after exclusion. Inspect semantic overlap before calling this an independent benchmark confirmation. Exact retained prompts are recorded even when no dataset revision is supplied. Use `--prompt-file` for another benchmark: each JSONL row needs `id`, `prompt`, `kind` (`harmful` or `harmless`), and `source`; optional category fields are retained in the run manifest. Choose a consistent safety policy when importing broader policy-refusal benchmarks.
 
-Directions are unit vectors extracted at block outputs. The ablation removes the selected direction at each block output. The projection sweep measures two distinct token positions and calls the base decoder directly, without allocating unnecessary vocabulary logits.
+The context stage defaults to intact behavior. `--arms both` adds all-block output ablation. `--arms steered --steering-alpha VALUE` adds that many activation units of the direction at one block output, with an optional `--steering-layer`. Choose VALUE on validation data using the measured coordinate scale and harmless controls, then freeze it for testing. `--random-direction` replaces the learned vector with a seeded random unit vector as an intervention control. Hook sites and equations are spelled out in the [protocol](docs/revision_protocol.md).
 
-## Scope and historical results
+## Measurement and outputs
 
-The existing `results/`, `Suraj/results_v3/`, paper source, and PDFs are preserved. They were produced with older settings and have not been rerun by this refactor. In particular, the earlier harmless split in experiment 6 overlaps the expanded 256-prompt training pool.
+The 18-phrase heuristic over the first 200 characters is retained as a diagnostic and layer-selection proxy. It is not the primary measure of unsafe behavior. Generation saves full answers with 512 output tokens by default in context runs; truncation and failure to reach the target remain visible. A longer allowance is a changed experiment, requiring a new run.
 
-The [review notes](docs/review.md) explain the code defects, misleading wording, and limitations of the earlier multi-request scoring and circuit interpretation. The [core settings](INVARIANTS.md) describe the maintained protocol. The old merge and phase plans are in `docs/history/`.
+Projection records contain per-request dot product, norm, cosine, token position, and paired change from the same format's empty-context control. Summaries count individual sign crossings and bootstrap requests within each cell. These are representation measurements; behavior association, position matching, evaluator calibration, and capability-preservation evidence still require analysis. In particular, cosine normalization cannot change the sign of a dot product on the same vectors.
 
-The present study supports claims about behavior and residual projections on this model and prompt set. Establishing a causal attention mechanism would additionally require target-response grading, position-matched controls, and interventions that recover the actual behavior on held-out prompts.
+Each model run records settings, exact requests/exclusions/backgrounds, input artifact hashes, code hashes, resolved model/tokenizer revisions, and package versions. Without `--output-dir`, commands create timestamped runs. Existing directories require `--resume` with identical settings, prompts, and artifacts; generation also checks the saved formatted input and case metadata. Sampling runs cannot resume. The full templated input plus output allowance must fit within the default 32768-token budget. The shell wrappers forward CLI arguments; they do not allocate cluster resources or install environments.
 
-## Checks
+## Historical work and checks
 
-The regression suite checks split separation, run isolation, token locations, result denominators, and hook cleanup. It runs without downloading model weights:
+The existing `results/`, `Suraj/results_v3/`, paper source, and PDFs are preserved. Their different judges, intervention sites, prompt pools, and generation lengths prevent treating them as one uniform protocol. The [review notes](docs/review.md) document those limitations; [INVARIANTS.md](INVARIANTS.md) defines the maintained settings.
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-Tiny decoder tests require PyTorch and are skipped when it is absent. CI installs a CPU build to run them. Full Qwen3 experiments require a separate model run; passing these checks does not validate or regenerate the historical results.
-
+The suite checks prompt separation, target spans, paired sign counts, human-label integrity, resume behavior, and hooks with a tiny CPU decoder. CI downloads no model weights. Passing software checks does not verify the historical research claims or substitute for a Qwen3 run, human grading, or second-model replication.

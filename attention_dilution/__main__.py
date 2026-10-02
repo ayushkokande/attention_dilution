@@ -1,4 +1,4 @@
-"""Run one of the four maintained experiment scripts."""
+"""Run a maintained model stage or review saved responses offline."""
 
 import argparse
 import importlib
@@ -9,6 +9,7 @@ COMMANDS = {
     "direction": "experiment_2.refusal_direction",
     "context": "experiment_8.context_sweep",
     "projection": "experiment_9.projection_sweep",
+    "review": "attention_dilution.review",
 }
 
 

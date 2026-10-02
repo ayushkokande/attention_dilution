@@ -4,6 +4,8 @@ from pathlib import Path
 from types import SimpleNamespace
 import tempfile
 import unittest
+import json
+from unittest.mock import patch
 
 try:
     import torch
@@ -12,7 +14,7 @@ except ImportError:
 
 from attention_dilution.activations import collect_residuals
 from attention_dilution.generation import generate_dataset
-from attention_dilution.shared import directional_ablation, summarize_responses
+from attention_dilution.shared import directional_ablation, directional_addition, summarize_responses
 
 
 if torch is not None:
@@ -25,6 +27,9 @@ if torch is not None:
         eos_token_id = 99
 
         def __call__(self, texts, **kwargs):
+            if isinstance(texts, str):
+                return {"input_ids": [ord(c) for c in texts],
+                        "offset_mapping": [(i, i + 1) for i in range(len(texts))]}
             width = max(map(len, texts))
             ids, masks = [], []
             for text in texts:
@@ -36,6 +41,12 @@ if torch is not None:
         def batch_decode(self, ids, **kwargs):
             responses = {1: "I cannot assist.", 2: "An answer.", 3: ""}
             return [responses[int(row[0])] for row in ids]
+
+        def decode(self, ids, **kwargs):
+            return "".join(chr(i) for i in ids)
+
+        def apply_chat_template(self, messages, **kwargs):
+            return "USER:" + messages[0]["content"] + ":ASSISTANT"
 
     class Block(torch.nn.Module):
         def __init__(self, amount):
@@ -130,6 +141,64 @@ class DecoderTests(unittest.TestCase):
                                     context_budget=128, path=Path(tmp) / "rows.jsonl")
             self.assertEqual(summarize_responses(rows)["n_failed"], 1)
             self.assertIsNone(summarize_responses(rows)["refusal_rate"])
+
+    def test_steering_adds_at_one_block_and_cleans_up_on_failure(self):
+        model = TinyModel()
+        enc = TinyTokenizer()(["a"])
+        ordinary = model.model(**enc, use_cache=False).last_hidden_state
+        with directional_addition(model, torch.tensor([1., 0.]), 0, 5):
+            changed = model.model(**enc, use_cache=False).last_hidden_state
+        self.assertEqual((changed - ordinary)[0, 0].tolist(), [5, 0])
+        self.assertTrue(all(not layer._forward_hooks for layer in model.model.layers))
+        model.model.fail = True
+        with self.assertRaisesRegex(RuntimeError, "forward failure"):
+            with directional_addition(model, torch.tensor([1., 0.]), 0, 5):
+                model.model(**enc, use_cache=False)
+        self.assertTrue(all(not layer._forward_hooks for layer in model.model.layers))
+
+    def test_generation_resume_rejects_a_changed_context_for_the_same_target(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            kwargs = dict(device="cpu", batch_size=1, max_new_tokens=4, temperature=0,
+                          context_budget=128, path=Path(tmp) / "rows.jsonl")
+            generate_dataset(TinyModel(), TinyTokenizer(), ["first"], ["target"], **kwargs)
+            with self.assertRaisesRegex(ValueError, "formatted prompt changed"):
+                generate_dataset(TinyModel(), TinyTokenizer(), ["other"], ["target"], resume=True, **kwargs)
+
+    def test_behavior_and_projection_use_identical_targets_and_contexts(self):
+        from experiment_8 import context_sweep
+        from experiment_9 import projection_sweep
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            direction = root / "direction"
+            direction.mkdir()
+            torch.save(torch.tensor([[1., 0.], [1., 0.]]), direction / "d_hat_all_layers.pt")
+            (direction / "meta.json").write_text(json.dumps({"model": "tiny", "canonical_layer": 0,
+                                                           "enable_thinking": False}))
+            inputs = {"harmful_train": ["Training target"], "harmless_train": [],
+                      "harmful_validation": [], "harmless_validation": []}
+            (direction / "run.json").write_text(json.dumps({"fingerprint": {"stage": "direction", "inputs": inputs}}))
+            common = ["test", "--model", "tiny", "--refusal-dir", str(direction), "--n-prompts", "2",
+                      "--lengths", "0", "128", "--formats", "prefix", "quoted", "tasks",
+                      "--backgrounds", "garden", "apennines", "--target-position", "first",
+                      "--context-budget", "2048"]
+            with patch("attention_dilution.study.load_core_pool", return_value=["Target one.", "Target two."]):
+                for module, stage, extra in [(context_sweep, "context", ["--max-new-tokens", "4"]),
+                                              (projection_sweep, "projection", ["--no-plot"])]:
+                    with patch("sys.argv", common + ["--output-dir", str(root / stage)] + extra), \
+                         patch.object(module, "load_model", return_value=(TinyModel(), TinyTokenizer(), "cpu")), \
+                         patch.object(module, "record_environment"):
+                        module.main()
+            for path in (root / "projection").glob("*.jsonl"):
+                projections = [json.loads(line) for line in path.read_text().splitlines()]
+                behavior_path = root / "context" / ("baseline_" + path.name)
+                behavior = [json.loads(line) for line in behavior_path.read_text().splitlines()]
+                for observed, measured in zip(behavior, projections):
+                    self.assertEqual(observed["chat_prompt"], measured["case"]["chat_prompt"])
+                    self.assertEqual(observed["case"]["request_id"], measured["case"]["request_id"])
+                    self.assertEqual(observed["case"]["request_position"], measured["case"]["request_position"])
+                    for position in measured["by_position"].values():
+                        for values in position.values():
+                            self.assertAlmostEqual(values["cosine"], values["projection"] / values["norm"], places=6)
 
 
 if __name__ == "__main__":
