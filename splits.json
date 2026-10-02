@@ -1,65 +1,155 @@
 {
-  "_comment": "Single source of truth for AdvBench (LLM-attacks harmful_behaviors.csv) and Alpaca (tatsu-lab/alpaca, train, empty-input rows after experiment_1/utils.py:_HARMLESS_EXCLUDE_SUBSTRINGS filter) row indices used by each numbered experiment. Update here, not in scripts.",
+  "_comment": "The core ranges below are the maintained split manifest. Historical artifacts in results/ used older ranges and judges; see docs/review.md. All Alpaca core ranges refer to the shared empty-input and clean-instruction filter.",
   "advbench_source": "https://raw.githubusercontent.com/llm-attacks/llm-attacks/main/data/advbench/harmful_behaviors.csv",
   "alpaca_source": "tatsu-lab/alpaca [train], empty-input rows only, filter via experiment_1/utils._harmless_instruction_is_clean",
   "experiments": {
     "experiment_1": {
       "purpose": "baseline refusal rates",
-      "advbench": [0, 520],
-      "alpaca": [0, 512]
+      "advbench": [
+        0,
+        520
+      ],
+      "alpaca": [
+        0,
+        512
+      ]
     },
     "experiment_2_refusal_direction": {
       "purpose": "d_hat extraction (DiffMean) — disjoint from sweep eval",
-      "advbench": [100, 356],
-      "alpaca": [0, 256],
+      "advbench": [
+        100,
+        356
+      ],
+      "alpaca": [
+        0,
+        256
+      ],
       "constant_legacy": "SWEEP_HARMFUL_N=100",
       "note": "registry updated 2026-05-07 to match results/qwen3-14b/refusal_direction/meta.json:n_harmful=256 (training pool extended to 256 paired prompts post-cascade); legacy SWEEP_HARMFUL_N constant referenced 100 prompts and is retained for cross-reference"
     },
     "experiment_3_guardrail_heads": {
       "purpose": "DLA per-head onto d_hat at canonical L_read; reuses Exp.2 causal-sweep held-out pool so heads are scored on the same prompts that defined L_read",
-      "advbench": [480, 504],
+      "advbench": [
+        480,
+        504
+      ],
       "alpaca": "n/a"
     },
     "experiment_9_projection_sweep": {
       "purpose": "continuous projection vs N",
-      "advbench": [0, 100],
+      "advbench": [
+        0,
+        100
+      ],
       "alpaca": "n/a"
     },
     "experiment_4_matched": {
       "purpose": "covariate-matched d_hat* extraction",
-      "advbench_pool": [100, "end"],
+      "advbench_pool": [
+        100,
+        "end"
+      ],
       "advbench_filter": "produce-artifact verbs only",
-      "alpaca_candidates": [0, 1000],
+      "alpaca_candidates": [
+        0,
+        1000
+      ],
       "alpaca_filter": "verb-class- and word-length-matched"
     },
     "experiment_5_styled_pools": {
       "purpose": "style-mismatch validity (AUC_intent vs AUC_vocab)",
-      "advbench_pool": [356, "end"],
+      "advbench_pool": [
+        356,
+        "end"
+      ],
       "alpaca_pool": "preferred from experiment_1 baseline_alpaca.jsonl, else load_dataset",
-      "dhat_excluded_advbench": [100, 356]
+      "dhat_excluded_advbench": [
+        100,
+        356
+      ]
     },
     "experiment_6_topic_2x2": {
       "purpose": "intent x topic 2x2 ANOVA (CELL_SIZE=50)",
-      "advbench": [0, 50],
-      "alpaca": [200, 250],
+      "advbench": [
+        0,
+        50
+      ],
+      "alpaca": [
+        600,
+        650
+      ],
       "alpaca_filter": "post _harmless_instruction_is_clean (matches exp_2 canonical filter)",
-      "manual_jsonl": ["data/manual_harmful_mundane.json (50)", "data/manual_harmless_edgy.json (50)"]
+      "manual_jsonl": [
+        "data/manual_harmful_mundane.json (50)",
+        "data/manual_harmless_edgy.json (50)"
+      ],
+      "historical_alpaca": [
+        200,
+        250
+      ],
+      "note": "Rebuild before rerunning. Historical [200:250) overlaps the 256-prompt direction training pool."
     },
     "experiment_7_policy_validity": {
       "purpose": "harm vs policy AUC (CELL_SIZE=50)",
-      "advbench": [50, 100],
-      "alpaca": [100, 150],
-      "sorry_bench": "sorry-bench/sorry-bench-202406, base-style, categories 41-45, 10 each"
+      "advbench": [
+        50,
+        100
+      ],
+      "alpaca": [
+        650,
+        700
+      ],
+      "sorry_bench": "sorry-bench/sorry-bench-202406, base-style, categories 41-45, 10 each",
+      "historical_alpaca": [
+        100,
+        150
+      ],
+      "note": "Future runs use the canonical Alpaca filter. Historical builder used unfiltered instruction rows, so its indices were not comparable."
     },
     "experiment_8": {
       "purpose": "binary refusal vs N (split out of experiment_2 in step 1)",
-      "advbench": [0, 100],
+      "advbench": [
+        0,
+        100
+      ],
       "alpaca": "n/a"
     }
   },
   "overlap_warnings": [
-    "exp_6 advbench[0:50] sits inside exp_8 sweep eval [0:100). Not a d_hat training leak (d_hat trained on [100:200)) but exp_6 evaluates d_hat on prompts also used as exp_8 sweep eval prompts.",
-    "exp_7 advbench[50:100) sits inside exp_8 sweep eval [0:100). Same caveat as exp_6: not a d_hat training leak but a shared eval space.",
-    "FIXED 2026-05-06: exp_2 d_hat alpaca[0:100) previously overlapped exp_6 harmless pool alpaca[0:50). exp_6 alpaca slice migrated to [200:250) post _harmless_instruction_is_clean filter (matches exp_2 canonical). Cluster eval rerun complete; per_prompt.jsonl harmless_mundane_topic row_id range = [200,249]. Eval leak closed."
-  ]
+    "Historical experiment_6 harmless_mundane Alpaca[200:250) overlaps direction training Alpaca[0:256); the old claim that this leak was fixed is stale.",
+    "Historical experiment_7 used a different Alpaca filter. Its row numbers do not identify the canonical filtered slice claimed in the old manifest.",
+    "Historical experiment_5 harmless_plain selection did not exclude the harmless direction-training pool; rebuild with the new exclusion before evaluating.",
+    "Matched-direction pools and exploratory evaluation pools need exact prompt comparisons before claiming out-of-sample validity.",
+    "Experiments 6 and 7 share harmful evaluation prompts with the core test split; they are not independent replications."
+  ],
+  "core": {
+    "advbench": {
+      "test": [
+        0,
+        100
+      ],
+      "train": [
+        100,
+        356
+      ],
+      "validation": [
+        480,
+        504
+      ]
+    },
+    "alpaca_post_filter": {
+      "train": [
+        0,
+        256
+      ],
+      "test": [
+        256,
+        356
+      ],
+      "validation": [
+        480,
+        504
+      ]
+    }
+  }
 }

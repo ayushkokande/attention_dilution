@@ -289,6 +289,15 @@ def main() -> None:
     excluded = range(args.dhat_adv_start, args.dhat_adv_start + args.dhat_adv_n)
     adv_rows = load_advbench_rows()
     alpaca_rows = load_alpaca_rows(target_n=max(1000, args.cell_size * 10))
+    # Exclude actual training strings, rather than assuming all loaders use
+    # the same Alpaca row numbering.
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from attention_dilution.shared import load_core_pool
+    training = {" ".join(p.split()).casefold()
+                for p in load_core_pool("train", "alpaca_post_filter")}
+    alpaca_rows = [(idx, text) for idx, text in alpaca_rows
+                   if " ".join(text.split()).casefold() not in training]
 
     harmful_edgy = make_pool_rows(
         "harmful_edgy",
@@ -401,3 +410,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -1,0 +1,11 @@
+-r requirements.txt
+transformer_lens>=2.18,<3
+circuit-tracer>=0.5
+scipy
+statsmodels
+scikit-learn
+tqdm
+plotly
+kaleido
+wandb
+jupyter

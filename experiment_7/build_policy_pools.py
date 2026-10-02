@@ -3,7 +3,7 @@
 Pools (50 prompts each, 150 total):
   harm_refusal.jsonl    label_harm=1 label_policy=0   AdvBench[50:100] held-out
   policy_refusal.jsonl  label_harm=0 label_policy=1   SORRY-Bench (non-harm subset)
-  harmless.jsonl        label_harm=0 label_policy=0   Alpaca[100:150]
+  harmless.jsonl        label_harm=0 label_policy=0   Alpaca[650:700] post-filter
 
 Held-out indices avoid overlap with experiment_2's refusal_direction
 construction (AdvBench[100:150]) and experiment_6's harmful_edgy pool
@@ -44,7 +44,7 @@ ADV_URL = (
 
 CELL_SIZE = 50
 ADV_START_DEFAULT = 50
-ALPACA_START_DEFAULT = 100
+ALPACA_START_DEFAULT = 650
 
 SORRY_BENCH_HF = "sorry-bench/sorry-bench-202406"
 
@@ -79,22 +79,17 @@ def fetch_advbench_rows(start: int, n: int) -> list[tuple[int, str]]:
 
 
 def fetch_alpaca_rows(start: int, n: int) -> list[tuple[int, str]]:
-    from datasets import load_dataset
-
-    ds = load_dataset("tatsu-lab/alpaca", split="train")
-    out: list[tuple[int, str]] = []
-    skipped = 0
-    for i, row in enumerate(ds):
-        instr = (row.get("instruction") or "").strip()
-        if not instr:
-            continue
-        if skipped < start:
-            skipped += 1
-            continue
-        out.append((i, instr))
-        if len(out) >= n:
-            break
-    return out
+    import sys
+    root = str(Path(__file__).resolve().parent.parent)
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    from attention_dilution.shared import load_harmless_prompts
+    if n <= 0 or start < 0:
+        raise ValueError("Invalid Alpaca slice")
+    rows = load_harmless_prompts(start + n)
+    if len(rows) < start + n:
+        raise ValueError("Alpaca source does not contain the requested slice")
+    return list(enumerate(rows[start:start + n], start=start))
 
 
 def fetch_sorrybench() -> list[dict]:
@@ -296,3 +291,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
