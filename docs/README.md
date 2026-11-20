@@ -10,6 +10,7 @@ an AI assistant in a new session. Nothing below depends on any chat history.
 | [`RUNBOOK.md`](RUNBOOK.md) | rent GPUs, run jobs on RunPod, move files, avoid the problems we hit, and control cost |
 | [`PAPER.md`](PAPER.md) | build the two PDFs (preprint and STALA/NDSS), regenerate tables, and change numbers safely |
 | [`SUBMISSION.md`](SUBMISSION.md) | submit: venues, deadlines, what is still missing, and the pre-submission checklist |
+| [`SCOPING_OTHER_VENUES.md`](SCOPING_OTHER_VENUES.md) | re-target the paper (security main tracks, NeurIPS/ICLR/ICML, ACL/EMNLP, other workshops): what to add, cost, how to restructure |
 | [`../v2/PREREGISTRATION.md`](../v2/PREREGISTRATION.md) | see the predictions committed before each confirmation run, and their outcomes |
 
 ## The project in one paragraph
