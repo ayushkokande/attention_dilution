@@ -70,3 +70,37 @@ u, ti, n = build_list_prompt("HARM", ["a", "b", "c"], "last", "tasks")
 assert ti == 4 and "Task 4: HARM" in u
 assert v1_refusal("I'm sorry, but") and not v1_refusal("1. Here is a poem")
 print("segmentation ok")
+
+# ---- causal.py position-masked hooks
+from causal import Pos, masked_ablation, masked_head_zero, masked_addition
+for kind in ("qwen", "llama"):
+    m = tiny(kind)
+    ids = torch.randint(0, 128, (1, 40))
+    d = torch.randn(64); d = d / d.norm()
+    pos = Pos(m); cap = []
+    capfn = lambda mod, i, o: cap.append((o[0] if isinstance(o, tuple) else o).detach())
+    with torch.no_grad(), hooks(pos.handle() + masked_ablation(m, pos, d, 0, 20) + [(l, capfn, "fwd") for l in m.model.layers]):
+        m(ids)
+    pr = torch.stack([(h[0] @ d).abs() for h in cap])  # [L, T]
+    assert pr[:, :20].max() < 1e-4 and pr[:, 20:].min() > 1e-6, (pr[:, :20].max(), pr[:, 20:].min())
+    # head zero: o_proj input slice zero only at positions >= 25
+    seen = []
+    o = m.model.layers[1].self_attn.o_proj
+    rec = lambda mod, args, kwargs: seen.append(args[0].detach().clone())
+    with torch.no_grad(), hooks(pos.handle() + masked_head_zero(m, pos, 1, 3, 25, None) + [(o, rec, "pre")]):
+        m(ids)
+    hd = m.model.layers[1].self_attn.head_dim
+    x = seen[-1][0]
+    assert x[25:, 3*hd:4*hd].abs().max() == 0 and x[:25, 3*hd:4*hd].abs().max() > 0 and x[25:, 2*hd:3*hd].abs().max() > 0
+    # generation: cache_position flows -> addition only at the single decision token
+    pos = Pos(m); cap = []
+    c0 = [(m.model.layers[0], capfn, "fwd")]
+    with torch.no_grad(), hooks(pos.handle() + c0):
+        m.generate(ids, max_new_tokens=3, do_sample=False)
+    base = [c.clone() for c in cap]; cap.clear()
+    with torch.no_grad(), hooks(pos.handle() + masked_addition(m, pos, 0, 5 * d, 39, 40) + c0):
+        m.generate(ids, max_new_tokens=3, do_sample=False)
+    delta = (cap[0] - base[0])[0]
+    assert delta[:39].abs().max() < 1e-5 and abs(float(delta[39] @ d) - 5) < 1e-3, float(delta[39] @ d)
+    assert pos.p is not None and int(pos.p[-1]) >= 40   # decode steps saw absolute positions
+    print(kind, "causal hooks ok")
