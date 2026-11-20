@@ -28,6 +28,7 @@ MODELS: Dict[str, dict] = {
     "gemma2-9b": dict(hf="google/gemma-2-9b-it", chat_kwargs={}, layer=None, head=None),
     "qwen3-32b": dict(hf="Qwen/Qwen3-32B", chat_kwargs={"enable_thinking": False}, layer=None, head=None),
     "llama31-70b": dict(hf="meta-llama/Llama-3.1-70B-Instruct", chat_kwargs={}, layer=None, head=None),
+    "gemma2-27b": dict(hf="google/gemma-2-27b-it", chat_kwargs={}, layer=None, head=None),
 }
 JUDGE_HF = "cais/HarmBench-Llama-2-13b-cls"
 

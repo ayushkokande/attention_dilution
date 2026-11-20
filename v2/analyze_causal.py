@@ -185,16 +185,24 @@ lines.append(r"\end{tabular}")
 # ---------------- scale (Qwen3-32B), framing, content
 NICE4 = dict(NICE, **{"qwen3-32b": "Qwen3-32B"})
 TAG["qwen3-32b"] = "QwenBig"
-R = [r for r in load("judged_scale_qwen3-32b.jsonl") if r["is_harmful"]]
-if R:
+for bm, BP in (("qwen3-32b", "Big"), ("llama31-70b", "Huge")):
+    R = [r for r in load(f"judged_scale_{bm}.jsonl") if r["is_harmful"]]
+    if not R:
+        continue
     for j, (lab, sel) in enumerate([("Alone", lambda r: r["k"] == 0)] + [(p.capitalize(), (lambda p: lambda r: r["k"] >= 3 and r["pos"] == p)(p)) for p in ("first", "middle", "last")]):
         rows = [r for r in R if sel(r)]
-        mac(f"Big{lab}Vone", f"{100 * np.mean([r['v1_24'] for r in rows]):.0f}\\%")
-        mac(f"Big{lab}Ref", f"{100 * np.mean([ref(r) for r in rows]):.0f}\\%")
-        mac(f"Big{lab}ASR", f"{100 * np.mean([hb(r) for r in rows]):.0f}\\%")
-    B = [r for r in load("judged_scale_qwen3-32b.jsonl") if not r["is_harmful"] and r["k"] > 0]
+        mac(f"{BP}{lab}Vone", f"{100 * np.mean([r['v1_24'] for r in rows]):.0f}\\%")
+        mac(f"{BP}{lab}Ref", f"{100 * np.mean([ref(r) for r in rows]):.0f}\\%")
+        mac(f"{BP}{lab}ASR", f"{100 * np.mean([hb(r) for r in rows]):.0f}\\%")
+    nf = [r for r in R if r["k"] >= 3 and r["pos"] != "first"]
+    mac(f"{BP}NotFirstVone", f"{100 * np.mean([r['v1_24'] for r in nf]):.0f}\\%")
+    mac(f"{BP}NotFirstRef", f"{100 * np.mean([ref(r) for r in nf]):.0f}\\%")
+    lr = [r for r in nf if r["item_ref"]]
+    for loc in ("upfront", "in_item"):
+        mac(f"{BP}Locus{loc.replace('_', '').capitalize()}", f"{100 * np.mean([r['locus'] == loc for r in lr]):.0f}\\%")
+    B = [r for r in load(f"judged_scale_{bm}.jsonl") if not r["is_harmful"] and r["k"] > 0]
     if B:
-        mac("BigBenignFP", f"{100 * np.mean([ref(r) for r in B]):.1f}\\%")
+        mac(f"{BP}BenignFP", f"{100 * np.mean([ref(r) for r in B]):.1f}\\%")
 FR = {m: load(f"judged_framing_{m}.jsonl") for m in list(NICE) + ["qwen3-32b"]}
 FR = {m: v for m, v in FR.items() if v}
 if FR:
@@ -232,7 +240,9 @@ if CT:
     (DST / "tab_content.tex").write_text("\n".join(lines))
 
 # ---------------- preregistered held-out confirmation (v2/PREREGISTRATION.md)
-HO = {m: load(f"judged_ablateho_{m}.jsonl") for m in ("qwen3-14b", "llama31-8b")}
+NICE["llama31-70b"] = "Llama-3.1-70B"
+TAG["llama31-70b"] = "LlamaHuge"
+HO = {m: load(f"judged_ablateho_{m}.jsonl") for m in ("qwen3-14b", "llama31-8b", "llama31-70b")}
 HO = {m: v for m, v in HO.items() if v}
 if HO:
     lines = [r"\begin{tabular}{llcccc}", r"\toprule",

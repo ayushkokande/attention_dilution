@@ -31,3 +31,9 @@ Behaviour: the same `scale` grid used for Qwen3-32B.
 7. Held-out, request alone: prompt-only ablation lowers target refusal by at least 30 points.
 
 Prediction 6 is the informative one; we report it whichever way it comes out.
+
+## Addendum 2 (2026-11-20, before any Gemma-2-27B-it output exists)
+
+Gemma-2-27B-it, behaviour only, same `scale` grid: prediction 5 (24-token judge reports at least 20 points less
+refusal than the target-specific rule when the harmful item is not first), and HarmBench ASR with the harmful
+item not first stays at or below 15%.
