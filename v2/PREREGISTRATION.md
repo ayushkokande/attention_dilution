@@ -16,3 +16,18 @@ Predictions (each counts as confirmed if it holds on the held-out set):
 4. Under prompt-only ablation, Qwen3-14B's list refusals are mostly in the item (locus in_item > 50% of refusals).
 
 Whatever the outcome, the paper reports the held-out numbers next to the exploratory ones.
+
+## Addendum (2026-11-20, written before any Llama-3.1-70B-Instruct output exists)
+
+Results of the four predictions above (all held) are in the paper (appendix, Table "held-out").
+We now add Llama-3.1-70B-Instruct and register predictions before generating anything with it. Same held-out set,
+conditions, rule and classifier as above; direction from v2/extract_direction.py with the same recipe.
+Behaviour: the same `scale` grid used for Qwen3-32B.
+
+5. Behaviour: with the harmful item not first (middle/last pooled, all list lengths), the 24-token judge reports at
+   least 20 points less refusal than the target-specific rule.
+6. Held-out, lists pooled: prompt-only ablation lowers Llama-3.1-70B's target refusal by at least 30 points
+   (i.e. it behaves like Llama-3.1-8B, not Qwen3-14B).
+7. Held-out, request alone: prompt-only ablation lowers target refusal by at least 30 points.
+
+Prediction 6 is the informative one; we report it whichever way it comes out.
