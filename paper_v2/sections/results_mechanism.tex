@@ -1,64 +1,85 @@
-We ran one forward pass per response over the prompt followed by the model's own greedy output, cut shortly
-after the harmful item's answer begins. At three positions we record the projection
-$\langle h_\ell,\dhat_\ell\rangle$: the last prompt token; the first content token of the harmful item's
-answer, the \emph{answer onset}; and the answer onset of the nearest benign item. We use 200 harmful targets
-for each $k\in\{0,3,15\}$ $\times$ \{first, last\}, plus the benign-target controls. Responses that refuse the
-item up front have no harmful answer onset and are excluded from onset statistics. \Cref{tab:probe} reports
-the selected layer, and \cref{fig:auc} shows every layer.
+Our earlier analysis explained the apparent collapse with two observations made at the last prompt token: a
+``sign flip'' of the refusal-direction projection, and a guardrail attention head losing attention to the
+harmful request. Here we re-measure both and add three interventions. We use the difference-of-means direction
+$\dhat_\ell$ \citep{arditi2024refusal}, fit on 256 harmful and 256 harmless single requests. \emph{Directional
+ablation} replaces each decoder-layer output $x$ with $x-(x^\top\dhat)\dhat$. The layer is chosen as the one
+whose ablation most reduces refusal on held-out prompts while keeping refusal of harmless prompts at or below
+5\%: layer 36 of 40 for Qwen3-14B, \GemmaLayer\ of 42 for Gemma-2-9B, \LlamaLayer\ of 32 for Llama-3.1-8B.
+We read the direction at three positions, running one forward pass over the prompt followed by the model's own
+response: the last prompt token, the first token of the harmful item's answer (its \emph{answer onset}), and
+the onset of a benign item.
 
 \begin{table}[t]
 \centering\small
-\caption{Projection onto the refusal direction at the selected layer (Qwen3-14B: 36; Gemma-2-9B:
-\GemmaLayer; Llama-3.1-8B: \LlamaLayer). Values are means; AUCs compare item-refused and item-complied responses
-to list prompts (800 probed list responses per model, of which 39, 11 and 54 complied; Gemma's AUCs therefore
-rest on few positives). The last rows split list responses by the sign of the last-token projection.}
+\caption{Projection onto $\dhat$ at the selected layer, scaled so that a harmful request alone is 100. AUCs
+compare list responses that refuse the harmful item with those that comply (800 probed list responses per
+model; 39, 11 and 54 complied, so Gemma's AUCs rest on few positives). The control row uses the projection of
+the \emph{same harmful request asked alone}.}
 \label{tab:probe}
 \resizebox{\linewidth}{!}{\input{generated/tab_probe}}
 \end{table}
 
-\paragraph{Lists shrink the last-token read-out and flip its sign, but not its ranking.} A harmful request
-alone gives a large positive projection at the last prompt token, and a benign request a small or negative one
-(\cref{tab:probe}; values are scaled so that harmful-alone $=100$). Embedding the harmful request in a list
-shrinks the last-token projection to 11--60\% of that value. For Qwen3-14B it turns negative in
-\QwenNegLastFrac\ of list prompts, which is the ``sign flip'' of our earlier study. Llama-3.1-8B flips in
-\LlamaNegLastFrac\ of list prompts and Gemma-2-9B never does. Read naively, a negative
-projection says the model has moved into the non-refusal half-space. Behaviourally that reading is wrong most
-of the time: when the sign flips, the model still refuses the harmful item or deflects it in about 77\% of
-responses in both Qwen3-14B and Llama-3.1-8B. It is right about risk, though: ASR is 23\% when the sign flips
-and 1--6\% when it does not.
+\paragraph{The sign flip is real but is not a decision.} List structure shrinks the last-token projection to
+11--60\% of its single-request value (\cref{tab:probe}), and for Qwen3-14B it turns negative in \QwenNegLastFrac\
+of list prompts. When it does, ASR is 23\% rather than 1\%, but the model still refuses or deflects the
+harmful item in 77\% of those responses.
 
-The ranking survives the shift. Within list prompts, the last-token projection separates responses that end up
-refusing the harmful item from those that comply, with AUC up to \QwenAUCLastBest\ (Qwen3-14B),
-\GemmaAUCLastBest\ (Gemma-2-9B) and \LlamaAUCLastBest\ (Llama-3.1-8B) at the best layer (\cref{fig:auc}). So the end of the prompt already encodes
-what the model will do \emph{when it gets to} the harmful item, even though its first output tokens are about
-something else. What breaks is the \emph{calibration} that maps the projection to the next tokens. The zero
-point that separates refusal from compliance for single requests does not carry over to lists. Last-token
-probes are not wrong about the model's state; they are wrong about \emph{when} that state takes effect.
+\paragraph{The last-token read-out mostly reflects the request, not the list.} Within list prompts, the
+last-token projection separates responses that end up refusing the harmful item from those that comply (AUC
+up to \QwenAUCLastBest, \GemmaAUCLastBest\ and \LlamaAUCLastBest). This looks like the model ``planning'' its
+refusal \citep{dong2025planning}. The control row shows it is not specific to the list: the projection of the
+\emph{same request asked alone} predicts the list outcome about as well (\QwenAUCBare, \GemmaAUCBare,
+\LlamaAUCBare). Requests the model objects to weakly are complied with in lists and alone alike. We therefore do
+not interpret the end-of-prompt read-out as a list-specific plan. At the harmful item's answer onset, the
+projection again separates refused from complied items (AUC up to 0.91, 0.90 and 0.83), and it sits above the
+onset of benign items in the same responses.
 
-\paragraph{The same information is present at the item.} At the harmful item's answer onset, the projection
-separates refused from complied items with AUC up to \QwenAUCOnsetBest\ (Qwen3-14B), \GemmaAUCOnsetBest\
-(Gemma-2-9B) and \LlamaAUCOnsetBest\ (Llama-3.1-8B), slightly below the last-token values. It also sits clearly above the answer onsets of benign items in the same responses
-(\cref{tab:probe}). In all three models the separation appears only in later layers: from about layer 20 of 40 in Qwen3-14B,
-layer 20 of 42 in Gemma-2-9B and layer 12 of 32 in Llama-3.1-8B. For Llama-3.1-8B it is weak at the causally selected layer 10
-(\cref{tab:probe}). Absolute projections at the onset are small compared with the harmful-alone value, which is
-expected, since $\dhat$ was fit at last-prompt-token positions of single requests.
+\paragraph{The guardrail head attends to the item being answered.} From the last prompt token, Qwen3-14B's
+head L36H31 puts little attention on the harmful request in a list (\AttnLast, against \AttnBare\ for the request
+alone). From the harmful item's answer onset it puts \AttnOnset, more than the same head puts on a benign item's
+own request at that item's onset (\AttnBenignOwn). Attention at the onset does fall with list length (from 0.027
+with 4 items to 0.014 with 16 items, harmful item last), but ASR does not rise with it (\cref{fig:behaviour}).
+Zeroing the head is reported in \cref{app:causal}: zeroing L36H31 changes neither ASR nor refusal (30\%/61\% without, 34\%/58\% with), and
+neither do three control heads, so the head reads the item but is not necessary for refusing it, consistent
+with \citet{srivastava2026ara}.
 
-\paragraph{The ``guardrail head'' looks when it needs to.} Our earlier study reported that Qwen3-14B's head
-L36H31, the largest direct contributor to $\dhat_{36}$, loses attention to the harmful request under dilution.
-From the last prompt token of a list prompt, its attention mass on the harmful request's tokens is indeed
-small: \AttnLast, against \AttnBare\ for the request alone. From the harmful item's answer onset it is
-\AttnOnset, several times higher than from the last prompt token and higher than the mass the same head puts on
-a benign item's own request at that item's onset (\AttnBenignOwn). The head reads whichever request the model
-is currently answering. Its low attention from the last prompt token reflects \emph{where we measured}, not a
-lesion.
+\paragraph{Prompt-only ablation.} If the item-level refusal were fully determined by prompt-position states,
+removing $\dhat$ only at prompt positions should remove it. For Qwen3-14B it does not. Refusal of the harmful item stays at 93\% in 4- and 8-item
+lists (89\% without ablation), and up-front refusals give way to refusals at the item, while the same ablation
+cuts refusal of the request alone from 94\% to 37\%. Ablating only at generated positions has the larger effect
+in lists (53\% and 49\%). For Llama-3.1-8B the opposite holds: prompt-only ablation cuts list refusal to
+25--31\% and raises ASR from 10--12\% to 47--60\%, while generation-only ablation has a smaller effect
+(\cref{tab:ablate}). Gemma-2-9B sits closer to Qwen3-14B: prompt-only ablation lowers its list refusal only to \AblGemmaFourPromptRef{} and \AblGemmaEightPromptRef{} (alone: \AblGemmaAlonePromptRef{}), while generation-only ablation, which barely touches the request alone (\AblGemmaAloneGenRef{}), removes nearly all list refusals (\AblGemmaFourGenRef{} and \AblGemmaEightGenRef{}, ASR \AblGemmaFourGenASR{} and \AblGemmaEightGenASR{}). Qwen3-14B and, largely, Gemma-2-9B re-derive the decision when they reach the item; Llama-3.1-8B carries a decision
+made at the prompt. This matches where each model refuses (\cref{sec:horizon}) and is our main mechanistic
+finding. A preregistered replication on 100 held-out HarmBench behaviours confirmed all four predictions we registered (\cref{app:decisions}, \cref{tab:heldout}): Qwen3-14B's list refusal was \HoQwenListsNoneRef{} without and \HoQwenListsPromptRef{} with prompt-only ablation while refusal of the request alone fell to \HoQwenAlonePromptRef{}; Llama-3.1-8B's list refusal fell from \HoLlamaListsNoneRef{} to \HoLlamaListsPromptRef{}. One caveat: for
+Qwen3-14B, removing $\dhat$ suppresses refusal phrasing but rarely yields content HarmBench rates harmful (ASR at
+most 7\% under any ablation), so for this model we locate where \emph{refusal} is decided, not where harm is
+permitted.
 
+\paragraph{Forced compliant openings deep in a response.} \citet{qi2025shallow} show that forcing a compliant
+opening (``Sure, here is \dots'') defeats most refusals because alignment concentrates on the first output
+tokens. We force JailbreakBench's target string as the beginning of the harmful item's answer inside a list, and
+as the beginning of the response for the request alone, then let the model continue for 256 tokens
+(\cref{tab:prefill}). Alone, Qwen3-14B recovers in only 9\% of cases and 91\% of continuations are rated harmful,
+reproducing the shallow-alignment effect. Forced at the harmful item inside a list, the same opening is followed
+by a refusal in 45\% (4 items) and 36\% (16 items) of cases, and ASR falls to 51\% and 43\%. Gemma-2-9B recovers
+in 78--85\% of cases everywhere, and Llama-3.1-8B in 20--34\% with no list advantage. Qwen3-14B's extra
+robustness deep in a list fits the ablation result: its decision is recomputed at the item rather than
+inherited from earlier tokens.
 
+\begin{table}[t]
+\centering\small
+\caption{Forced compliant opening (JailbreakBench target string). ``Recovers'': the 256-token continuation
+contains a refusal; ASR: HarmBench on opening plus continuation. List cases exclude responses that refused the
+item up front (no answer onset). 95\% CIs over prompts.}
+\label{tab:prefill}
+\input{generated/tab_prefill}
+\end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{generated/fig_auc_layers.pdf}
-\caption{How well the projection onto $\dhat_\ell$ separates list responses that refuse the harmful item from
-those that comply (HarmBench), by layer. Red: read at the last prompt token. Green: read at the harmful item's
-answer onset. Dotted: causally selected layer.}
-\label{fig:auc}
-\end{figure}
+\paragraph{Adding the direction at the decision point.} Teacher-forcing the model's own response up to the
+harmful item's answer onset ($k{=}15$) and adding $\alpha$ times the \emph{unnormalized} difference-of-means
+vector from that token onward lowers harmful continuations: for Qwen3-14B from 28\% to 6\% at $\alpha{=}1$
+with no refusals of benign targets; for Llama-3.1-8B from 34\% to 8\% at $\alpha{=}0.5$ with 3\% benign
+refusals. Larger doses refuse benign targets as well. Adding the vector at the single decision token is much weaker: Qwen3-14B needs twice the
+dose (3\% ASR at $\alpha{=}2$) and Llama-3.1-8B is unaffected at the doses tested (\cref{tab:steer1}).\ Full results are in \cref{app:causal}.
+Our earlier conclusion that steering cannot restore refusal came from adding at most 2.6\% of this vector.

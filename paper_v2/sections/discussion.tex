@@ -1,34 +1,35 @@
-\paragraph{For evaluation.} Judges that read the first few tokens, or that treat a response as one unit, are not
-valid for multi-request prompts. For any red-teaming or long-context safety benchmark whose prompts contain
-several tasks, we recommend: (i)~generate until the model finishes; (ii)~judge harmful content anywhere in the
-response; (iii)~report the harmful item's position as a controlled factor, because an attack that ``works''
-only when the item is not first may be measuring the judge rather than the model. The over-refusal control
-matters as well. Benign list items routinely receive capability disclaimers, so a refusal detector applied to
-the whole response overcounts refusal.
+\paragraph{Recommendations for evaluating multi-request prompts.}
+\begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=1pt]
+\item \textbf{Generate to completion and judge the whole response.} For lists of four or more items, judges
+that read a few hundred tokens miss most deferred refusals (\cref{fig:horizon}).
+\item \textbf{Judge the harmful item, not the response's opening.} Score harmful content anywhere in the
+response, and count refusals only where they refer to the harmful item; capability disclaimers on benign items
+otherwise inflate refusal (18\% false positives on benign Gemma lists under a whole-response phrase rule).
+\item \textbf{Control and report the harmful item's position.} An attack that ``works'' only when the item is
+not first may be measuring the judge rather than the model.
+\item \textbf{Compare models with the same horizon only if they refuse in the same place.} A short horizon
+favours models that refuse up front (\cref{sec:horizon}).
+\end{enumerate}
 
 \paragraph{For interpretability.} Reading a refusal direction at the last prompt token assumes that the next
-output token is where the decision takes effect. That assumption is true for single requests and false for
-lists. Our probes suggest a simple alternative: read the direction at the position where the model starts
-acting on the request in question. This is a small change that generalizes to agentic transcripts, where the
-``decision point'' for a tool call or a sub-task is usually deep inside the model's own output.
-\citet{zhao2025separately} already distinguish instruction-position harmfulness from post-instruction
-refusal. Our results add that the post-instruction position can be one the model writes itself.
-
-\paragraph{Relation to shallow alignment.} \citet{qi2025shallow} show that much of safety alignment acts on
-the first few output tokens. List prompts move the harmful item's first tokens hundreds of tokens into the
-response. If safety behaviour were confined to the first output tokens, list prompts should be an effective jailbreak. They are not: ASR is at most 15\% in any cell across the three models and templates, and most refusals happen at the item, deep in the model's own response. For refusals triggered by an explicit harmful request, all three models' safety behaviour therefore extends well past the opening tokens.
+tokens carry the decision. That holds for single requests, and our ablations show it also holds for
+Llama-3.1-8B in lists, but not for Qwen3-14B, which recomputes the decision at the item. Read-outs and
+interventions should therefore target the position where the model acts on the request in question, which in
+agentic transcripts is usually deep in the model's own output. End-of-prompt read-outs should also be compared
+against the same request in isolation before being interpreted as plans.
 
 \paragraph{Limitations.}
 \begin{itemize}[leftmargin=*,itemsep=1pt,topsep=1pt]
-\item \textbf{Automatic judges.} ASR comes from one classifier and refusal from a phrase list with a measured
-false-positive rate. The 120-item human audit sheet has not yet been annotated (\cref{app:judge}).
-\item \textbf{Greedy decoding only.} Sampling may change the rates, especially for borderline items.
-\item \textbf{Three open models of 8--14B parameters.} We did not test larger or proprietary models, or
-reasoning modes (Qwen3 thinking was disabled).
-\item \textbf{One kind of structure.} We study lists of independent benign tasks. Other multi-request
-structures (nested tasks, role-play, documents with embedded instructions) may behave differently, and
-our earlier findings for prose prefixes, chat histories and few-shot blocks on Qwen3-14B used the
-24-token judge (except a Wikipedia-prefix sweep scored on longer generations) and should be re-checked.
-\item \textbf{Direction-based mechanism.} We probe one difference-of-means direction per model and one attention
-head in Qwen3-14B. Refusal is known to involve multi-dimensional structure \citep{wollschlaeger2025geometry}.
+\item \textbf{Automatic judges.} ASR comes from HarmBench's classifier, checked against StrongREJECT, and refusal
+from a phrase rule with a measured false-positive rate. Human labels for a 120-response audit set are not yet
+collected.
+\item \textbf{Open models of 8--32B parameters,} with reasoning mode tested only for Qwen3-14B. We did not test
+proprietary models.
+\item \textbf{One family of structures.} Lists of independent tasks, with four kinds of benign content and three
+adversarial framings. Documents with embedded instructions and multi-turn agent transcripts remain untested.
+\item \textbf{One direction per model.} Refusal involves more than one direction \citep{wollschlaeger2025geometry},
+and for Qwen3-14B ablating ours removes refusal phrasing without producing much harmful content. The
+mechanistic results concern the refusal behaviour this direction controls.
+\item \textbf{No training-based mitigation.} We test activation steering only; fine-tuning for item-level
+refusal is left for future work.
 \end{itemize}

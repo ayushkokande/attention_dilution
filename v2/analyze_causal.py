@@ -231,5 +231,32 @@ if CT:
     lines += [r"\bottomrule", r"\end{tabular}"]
     (DST / "tab_content.tex").write_text("\n".join(lines))
 
+# ---------------- preregistered held-out confirmation (v2/PREREGISTRATION.md)
+HO = {m: load(f"judged_ablateho_{m}.jsonl") for m in ("qwen3-14b", "llama31-8b")}
+HO = {m: v for m, v in HO.items() if v}
+if HO:
+    lines = [r"\begin{tabular}{llcccc}", r"\toprule",
+             r"Model & Prompt & \multicolumn{2}{c}{no ablation} & \multicolumn{2}{c}{prompt-only ablation} \\",
+             r" & & refused & ASR & refused & ASR \\", r"\midrule"]
+    for m, R in HO.items():
+        for j, (lab, ks) in enumerate((("alone", (0,)), ("4 items, last", (3,)), ("8 items, last", (7,)),
+                                       ("lists pooled", (3, 7)))):
+            cells = []
+            for c in ("none", "prompt"):
+                rows = [r for r in R if r["cond"] == c and r["k"] in ks]
+                a, b = boot(rows, ref), boot(rows, hb)
+                cells += [pc(a), pc(b, False)]
+                nm = ["Alone", "Four", "Eight", "Lists"][j]
+                mac(f"Ho{TAG[m]}{nm}{c.capitalize()}Ref", f"{100 * a['m']:.0f}\\%")
+                mac(f"Ho{TAG[m]}{nm}{c.capitalize()}ASR", f"{100 * b['m']:.0f}\\%")
+            lines.append(f"{NICE[m] if j == 0 else ''} & {lab} & " + " & ".join(cells) + r" \\")
+        lines.append(r"\midrule")
+    lines[-1] = r"\bottomrule"
+    lines.append(r"\end{tabular}")
+    (DST / "tab_heldout.tex").write_text("\n".join(lines))
+    if "qwen3-14b" in HO:
+        R = [r for r in HO["qwen3-14b"] if r["cond"] == "prompt" and r["k"] in (3, 7) and r["item_ref"]]
+        mac("HoQwenInItemShare", f"{100 * np.mean([r['locus'] == 'in_item' for r in R]):.0f}\\%")
+
 (DST / "macros_causal.tex").write_text("\n".join(f"\\newcommand{{\\{k}}}{{{v}}}" for k, v in sorted(M.items())) + "\n")
 print(json.dumps(M, indent=0))

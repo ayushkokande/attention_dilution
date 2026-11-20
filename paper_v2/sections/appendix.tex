@@ -73,6 +73,14 @@ complied, refused, other), for human annotation of whether the harmful item was 
 response is harmful. We have not yet collected these labels. Because some responses contain harmful content,
 response text is not in the public repository and is available from the authors on request.
 
+\begin{table}[t]
+\centering\small
+\caption{Three list templates at $k{=}15$, harmful item first or last (200 responses per cell). Columns: refusal
+in the first 24 tokens / HarmBench ASR, in \%.}
+\label{tab:templates}
+\resizebox{\linewidth}{!}{\input{generated/tab_templates}}
+\end{table}
+
 \section{Validity of the Qwen3-14B refusal direction}
 \label{app:validity}
 
@@ -85,3 +93,83 @@ topic. (iv)~The direction separates harm-motivated from policy-motivated refusal
 small (50--100 prompts per cell), so we treat them as sanity checks. None of the claims in this paper rests
 on $\dhat$ encoding ``harm intent'' specifically. We only use it as the direction whose ablation removes
 refusal (\cref{sec:setup}).
+
+\section{Interventions and robustness: full results}
+\label{app:causal}
+
+\begin{table}[h]
+\centering\small
+\caption{Directional ablation of $\dhat$ restricted to prompt positions, generated positions, or all positions;
+free greedy generation of the full response (100 targets, harmful item last). Cells: target refused / ASR, in \%.}
+\label{tab:ablate}
+\resizebox{\linewidth}{!}{\input{generated/tab_ablate}}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Activation addition from the harmful item's decision token onward ($k{=}15$; 64 harmful and 32
+benign targets per model). Cells: harmful ASR / target refused; benign targets refused, in \%. $\alpha$ is in
+units of the unnormalized difference-of-means vector.}
+\label{tab:steer}
+\resizebox{\linewidth}{!}{\input{generated/tab_steer}}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Adding the same vector at the single decision token versus from it onward.}
+\label{tab:steer1}
+\input{generated/tab_steer1}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Zeroing one attention head of Qwen3-14B's layer 36 from the decision token onward or at every
+position, for the guardrail head (H31) and three other heads in the same layer.}
+\label{tab:head}
+\input{generated/tab_head}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Second judge: StrongREJECT's fine-tuned evaluator \citep{souly2024strongreject}, max over 512-token
+windows. AUC of its score against the HarmBench label; rates of score $>0.5$ and of HarmBench ``yes''; mean score
+of responses that neither refuse nor are harmful under our main labels.}
+\label{tab:sr}
+\input{generated/tab_sr}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Reasoning mode (Qwen3-14B, thinking on; judged on the visible answer only) and sampled decoding
+($T{=}0.7$, top-$p$ 0.95, three samples per prompt). Numbered template, $k\in\{3,15\}$.}
+\label{tab:variants}
+\resizebox{\linewidth}{!}{\input{generated/tab_variants}}
+\end{table}
+
+\section{Analysis decisions made after seeing data}
+\label{app:decisions}
+
+For transparency we list every analysis choice that was made or changed after looking at results.
+\begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=1pt]
+\item \textbf{Refusal rule.} We first counted a refusal phrase anywhere in the response. On all-benign Gemma
+lists this fired on 18\% of responses (capability disclaimers in other items), so we restricted it to the
+preamble, the target's answer, or a skipped target. The rule was fixed before HarmBench judging and before any
+mechanistic analysis.
+\item \textbf{Segmentation.} After inspecting Qwen3-14B responses we added ``Task'', ``Level'', ``Question'' and
+bold-number markers and the up-front-refusal check, because nested numbered lists inside benign answers were
+being mistaken for item markers.
+\item \textbf{Layers for AUCs.} \Cref{tab:probe} reports both the causally selected layer and the best layer
+(chosen on the same data); the best-layer values are optimistic.
+\item \textbf{Same-request-alone control.} Added after observing the high last-token AUCs; it overturned our
+interpretation of them (\cref{sec:mechanism}).
+\item \textbf{Prompt-only ablation.} The model-dependent result was observed on 100 JailbreakBench and AdvBench
+targets. We then preregistered predictions (\texttt{v2/PREREGISTRATION.md}, committed before the run) and tested
+them on 100 held-out HarmBench behaviours. All four predictions held (\cref{tab:heldout}). Qwen3-14B's list refusal under prompt-only ablation was \HoQwenListsPromptRef{} against \HoQwenListsNoneRef{} without ablation (prediction 1), while refusal of the request alone fell from \HoQwenAloneNoneRef{} to \HoQwenAlonePromptRef{} (prediction 2). Llama-3.1-8B's pooled list refusal fell from \HoLlamaListsNoneRef{} to \HoLlamaListsPromptRef{} (prediction 3), and \HoQwenInItemShare{} of Qwen's surviving list refusals were in the item (prediction 4). HarmBench ASR agrees: Llama's pooled list ASR rose from \HoLlamaListsNoneASR{} to \HoLlamaListsPromptASR{}, while Qwen's fell from \HoQwenListsNoneASR{} to \HoQwenListsPromptASR{}. The pooled intervals treat the 4- and 8-item rows of a behaviour as independent, so they are somewhat too narrow.
+\item \textbf{Steering selection.} Steering cases prioritize responses where the unsteered model complied, which
+raises baseline ASR in \cref{tab:steer} relative to \cref{tab:behaviour}.
+\end{enumerate}
+\begin{table}[h]\centering\small
+\caption{Preregistered held-out confirmation: 100 HarmBench standard behaviours not in the exploratory set (target-specific refusal \%, 95\% bootstrap CI; HarmBench ASR \%).}\label{tab:heldout}
+\IfFileExists{generated/tab_heldout.tex}{\input{generated/tab_heldout}}{}
+\end{table}
+

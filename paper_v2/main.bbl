@@ -1,16 +1,9 @@
-\begin{thebibliography}{22}
+\begin{thebibliography}{27}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
-
-\bibitem[Anil et~al.(2024)Anil, Durmus, Sharma, Benton, Kundu, Batson, Rimsky,
-  Tong, Mu, Ford, et~al.]{anil2024manyshot}
-Cem Anil, Esin Durmus, Mrinank Sharma, Joe Benton, Sandipan Kundu, Joshua
-  Batson, Nina Rimsky, Meg Tong, Jesse Mu, Daniel Ford, et~al.
-\newblock Many-shot jailbreaking.
-\newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
 
 \bibitem[Arditi et~al.(2024)Arditi, Obeso, Syed, Paleka, Panickssery, Gurnee,
   and Nanda]{arditi2024refusal}
@@ -31,6 +24,24 @@ Patrick Chao, Edoardo Debenedetti, Alexander Robey, Maksym Andriushchenko,
 \newblock In \emph{Advances in Neural Information Processing Systems, Datasets
   and Benchmarks Track}, 2024.
 
+\bibitem[Cunningham et~al.(2025)Cunningham, Peng, Wei, Ong, Roger, Petrini,
+  Wagner, Mikulik, and Sharma]{cunningham2025cheap}
+Hoagy Cunningham, Alwin Peng, Jerry Wei, Euan Ong, Fabien Roger, Linda Petrini,
+  Misha Wagner, Vladimir Mikulik, and Mrinank Sharma.
+\newblock Cost-effective constitutional classifiers via representation re-use.
+\newblock Anthropic Alignment Science Blog,
+  \url{https://alignment.anthropic.com/2025/cheap-monitors}, 2025.
+
+\bibitem[Dahiya et~al.(2026)Dahiya, Shabana, and Lange]{dahiya2026suppress}
+Tejas Dahiya, Mahmoud Shabana, and Georg Lange.
+\newblock Do jailbreaks suppress the refusal direction?
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2026.
+
+\bibitem[Dong et~al.(2025)Dong, Zhou, Liu, Yang, and Lu]{dong2025planning}
+Zhichen Dong, Zhanhui Zhou, Zhixuan Liu, Chao Yang, and Chaochao Lu.
+\newblock Emergent response planning in {LLMs}.
+\newblock In \emph{International Conference on Machine Learning}, 2025.
+
 \bibitem[{Gemma Team}(2024)]{gemma2}
 {Gemma Team}.
 \newblock Gemma 2: Improving open language models at a practical size.
@@ -43,13 +54,19 @@ Tsimur Hadeliya, Mohammad~Ali Jauhar, Nidhi Sakpal, and Diogo Cruz.
   agents.
 \newblock \emph{arXiv preprint arXiv:2512.02445}, 2025.
 
-\bibitem[He et~al.(2026)He, Wang, Chu, Xu, Zhang, Wang, and
-  Zheng]{he2026jailbreakscope}
+\bibitem[He et~al.(2024)He, Wang, Chu, Xu, Zhang, Wang, and
+  Zheng]{he2024jailbreaklens}
 Zeqing He, Zhibo Wang, Zhixuan Chu, Huiyu Xu, Wenhui Zhang, Qinglong Wang, and
   Rui Zheng.
-\newblock {JailbreakScope}: Interpreting jailbreak mechanism through
-  representation and circuit analyses.
-\newblock In \emph{USENIX Security Symposium}, 2026.
+\newblock {JailbreakLens}: Interpreting jailbreak mechanism in the lens of
+  representation and circuit.
+\newblock \emph{arXiv preprint arXiv:2411.11114}, 2024.
+
+\bibitem[Kim et~al.(2025)Kim, Ha, Park, and Yu]{kim2025m2s}
+Hyunjun Kim, Junwoo Ha, Haon Park, and Sangyoon Yu.
+\newblock {X-Teaming} evolutionary {M2S}: Automated discovery of multi-turn to
+  single-turn jailbreak templates.
+\newblock \emph{arXiv preprint arXiv:2509.08729}, 2025.
 
 \bibitem[Kwon et~al.(2023)Kwon, Li, Zhuang, Sheng, Zheng, Yu, Gonzalez, Zhang,
   and Stoica]{kwon2023vllm}
@@ -71,9 +88,7 @@ Yida Lu, Jiale Cheng, Zhexin Zhang, Shiyao Cui, Cunxiang Wang, Xiaotao Gu,
   Yuxiao Dong, Jie Tang, Hongning Wang, and Minlie Huang.
 \newblock {LongSafety}: Evaluating long-context safety of large language
   models.
-\newblock In \emph{Proceedings of the Annual Meeting of the Association for
-  Computational Linguistics}, 2025.
-\newblock arXiv:2502.16971.
+\newblock \emph{arXiv preprint arXiv:2502.16971}, 2025.
 
 \bibitem[Mazeika et~al.(2024)Mazeika, Phan, Yin, Zou, Wang, Mu, Sakhaee, Li,
   Basart, Li, Forsyth, and Hendrycks]{mazeika2024harmbench}
@@ -83,6 +98,13 @@ Mantas Mazeika, Long Phan, Xuwang Yin, Andy Zou, Zifan Wang, Norman Mu, Elham
 \newblock {HarmBench}: A standardized evaluation framework for automated red
   teaming and robust refusal.
 \newblock In \emph{International Conference on Machine Learning}, 2024.
+
+\bibitem[McKenzie et~al.(2025)McKenzie, Pawar, Blandfort, Bankes, Krueger,
+  Lubana, and Krasheninnikov]{mckenzie2025highstakes}
+Alex McKenzie, Urja Pawar, Phil Blandfort, William Bankes, David Krueger,
+  Ekdeep~Singh Lubana, and Dmitrii Krasheninnikov.
+\newblock Detecting high-stakes interactions with activation probes.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2025.
 
 \bibitem[{Palo Alto Networks Unit 42}(2024)]{unit42deceptive}
 {Palo Alto Networks Unit 42}.
@@ -117,9 +139,7 @@ Bijoy~Ahmed Saiem, MD~Sadik~Hossain Shanto, Rakib Ahsan, and Md~Rafi~ur Rashid.
 Alexandra Souly, Qingyuan Lu, Dillon Bowen, Tu~Trinh, Elvis Hsieh, Sana Pandey,
   Pieter Abbeel, Justin Svegliato, Scott Emmons, Olivia Watkins, and Sam Toyer.
 \newblock A {StrongREJECT} for empty jailbreaks.
-\newblock In \emph{Advances in Neural Information Processing Systems, Datasets
-  and Benchmarks Track}, 2024.
-\newblock arXiv:2402.10260.
+\newblock \emph{arXiv preprint arXiv:2402.10260}, 2024.
 
 \bibitem[Srivastava \& Panda(2026)Srivastava and Panda]{srivastava2026ara}
 Aviral Srivastava and Sourav Panda.
@@ -139,14 +159,18 @@ Tom Wollschl{\"a}ger, Jannes Elstner, Simon Geisler, Vincent Cohen-Addad,
   Stephan G{\"u}nnemann, and Johannes Gasteiger.
 \newblock The geometry of refusal in large language models: Concept cones and
   representational independence.
-\newblock In \emph{International Conference on Machine Learning}, 2025.
-\newblock arXiv:2502.17420.
+\newblock \emph{arXiv preprint arXiv:2502.17420}, 2025.
 
 \bibitem[Xiao et~al.(2024)Xiao, Yang, Chen, and Chen]{xiao2024dap}
 Zeguan Xiao, Yan Yang, Guanhua Chen, and Yun Chen.
 \newblock Distract large language models for automatic jailbreak attack.
-\newblock In \emph{Proceedings of the Conference on Empirical Methods in
-  Natural Language Processing}, 2024.
+\newblock \emph{arXiv preprint arXiv:2403.08424}, 2024.
+
+\bibitem[Yamaguchi et~al.(2025)Yamaguchi, Etheridge, and
+  Arditi]{yamaguchi2025reasoning}
+Kureha Yamaguchi, Benjamin Etheridge, and Andy Arditi.
+\newblock Where do reasoning models refuse?
+\newblock \emph{arXiv preprint arXiv:2507.03167}, 2025.
 
 \bibitem[Zhao et~al.(2025)Zhao, Huang, Wu, Bau, and Shi]{zhao2025separately}
 Jiachen Zhao, Jing Huang, Zhengxuan Wu, David Bau, and Weiyan Shi.

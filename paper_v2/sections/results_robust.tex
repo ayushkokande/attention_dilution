@@ -1,0 +1,46 @@
+\paragraph{A larger model.} Qwen3-32B shows the same misreading. With the harmful item in the middle of a list,
+its opening refusal rate is \BigMiddleVone, while it refuses the item in \BigMiddleRef\ of responses and
+HarmBench ASR is \BigMiddleASR\ (request alone: \BigAloneRef\ refused, \BigAloneASR\ ASR).
+
+\paragraph{Sampled decoding.} With temperature 0.7 and three samples per prompt, the gap persists for every
+model: with the harmful item last, the 24-token judge reports \SampQwenLastVone, \SampGemmaLastVone\ and
+\SampLlamaLastVone\ refusal for Qwen3-14B, Gemma-2-9B and Llama-3.1-8B, against \SampQwenLastRef,
+\SampGemmaLastRef\ and \SampLlamaLastRef\ target refusal and \SampQwenLastASR, \SampGemmaLastASR\ and
+\SampLlamaLastASR\ ASR (\cref{tab:variants}).
+
+\paragraph{Reasoning mode.} \THINKSENTENCE
+
+\paragraph{A second judge.} StrongREJECT's fine-tuned evaluator \citep{souly2024strongreject} agrees with
+HarmBench's labels (AUC \SRQwenAUC, \SRGemmaAUC, \SRLlamaAUC) and rates responses that neither refuse nor are
+harmful under our labels as low-utility for an attacker (mean score \SRQwenOther, \SRGemmaOther, \SRLlamaOther\ on
+a 0--1 scale), supporting our reading of them as deflections (\cref{tab:sr}).
+
+\paragraph{What surrounds the request.} Replacing Alpaca instructions with coding tasks, math word problems or
+factual questions as the benign items (8-item lists, harmful item in the middle or last) leaves ASR low for
+every model (\cref{tab:content}). \CONTENTSENTENCE
+
+\paragraph{Lists versus adversarial framings.} SequentialBreak \citep{saiem2024sequentialbreak} reports high
+attack success for harmful prompts embedded late in game, dialogue and question-bank framings. We wrote framings
+in that style ourselves (8 items; JailbreakBench targets) and compared them with the plain list under the same
+full-response judge (\cref{tab:framing}). The framing, not the list or the position, carries the effect. A
+text-adventure framing raises ASR to 28--42\% across the four models when the harmful item comes first and to
+8--27\% when it comes late, so position matters less than framing; a question-bank framing raises Qwen3-14B's ASR
+to 15--21\%. The plain list and the dialogue framing stay at or below 12\%. Our numbers
+remain below SequentialBreak's, whose templates are generated and tuned per behaviour, but they agree that
+narrative framing, not multi-request structure as such, is what makes embedded requests effective.
+
+\begin{table}[t]
+\centering\small
+\caption{Plain list versus framings in the style of SequentialBreak (8 items, 100 JailbreakBench targets).
+Cells: HarmBench ASR / refusal in the first 24 tokens, in \%. ``Late'': fifth of eight items.}
+\label{tab:framing}
+\resizebox{\linewidth}{!}{\input{generated/tab_framing}}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\caption{Kinds of benign items around the harmful request (8 items, harmful item in the middle or last; 400
+responses per cell). Cells in \%.}
+\label{tab:content}
+\resizebox{\linewidth}{!}{\IfFileExists{generated/tab_content.tex}{\input{generated/tab_content}}{\textbf{[content table pending]}}}
+\end{table}

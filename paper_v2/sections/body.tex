@@ -1,139 +1,137 @@
 \section{Introduction}
 \label{sec:intro}
 
-Safety evaluations of language models usually present a harmful request on its own and score whether the
-response \emph{starts} with a refusal. Many mechanistic analyses of refusal make the matching assumption on the
-input side: they read the model's refusal state at the final token of the prompt
-\citep{arditi2024refusal,zhao2025separately}. Both conventions work for single-request prompts, because the
-model's first output tokens are its answer to the one request.
+Safety evaluations usually present a harmful request and score whether the response \emph{opens} with a
+refusal, either with refusal-phrase matching on the first tokens or with a judge applied to a short
+generation. For a single request this is reasonable: the model's first output tokens are its answer to that
+request.
 
-They stop working when a harmful request is one item among several. Embedding a harmful request in a list of
-benign tasks is a well-known jailbreak strategy
-\citep{xiao2024dap,saiem2024sequentialbreak,unit42deceptive}, and multi-request inputs are routine in agentic
-and long-context use \citep{lu2025longsafety,hadeliya2025refusals}. In a list, the model may answer the benign
-items first and deal with the harmful one only when it reaches it, hundreds of tokens into the response. A
-judge that reads only the opening of the response, or a probe that reads only the last prompt token, then sees
-the model getting ready to answer a \emph{benign} item.
+It is not reasonable when the harmful request is one item among several. Embedding a harmful request in a list
+of benign tasks is a known jailbreak strategy
+\citep{xiao2024dap,saiem2024sequentialbreak,unit42deceptive,kim2025m2s}, and multi-request inputs are routine
+in long-context and agentic use \citep{lu2025longsafety,hadeliya2025refusals}. Given a list, a model can answer
+the benign items first and handle the harmful one when it gets there, hundreds of tokens into its response.
+A judge that reads only the opening then scores a refusal as compliance.
 
-We arrived at this problem the hard way. In an earlier version of this project we reported that a
-numbered-list (``distractor'') format collapsed refusal in Qwen3-14B after only ${\sim}31$ tokens of benign
-context, and we built a mechanistic account around it. That account included a ``guardrail'' attention head
-losing attention to the harmful request and a sign flip of the refusal-direction projection at the last
-prompt token. Refusal in that study was scored on the first 24 generated tokens, and the harmful item sat at a
-pseudo-random position in the list. \Cref{app:v1} shows that a one-parameter model, ``the response opens with a
-refusal only if the harmful item is listed first,'' accounts for about 90\% of the variance in the reported
-collapse curve. This paper replaces that analysis with a controlled one and asks three questions.
+We learned this from our own mistake. In an earlier version of this project, scoring the first 24 generated
+tokens suggested that a numbered list of benign tasks collapses Qwen3-14B's refusal after about 31 tokens of
+context, and we built a mechanistic account of the collapse. The harmful item, however, sat at a
+pseudo-random position in the list. A one-parameter model, ``the response opens with a refusal only when the
+harmful item is listed first,'' explains about 90\% of the variance in that collapse curve
+(\cref{app:v1}). This paper replaces that analysis with a controlled measurement.
 
+\paragraph{Contributions.}
 \begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=2pt]
-\item \textbf{How badly does a short-horizon judge misread list prompts?} We control the harmful item's position
-(first, middle, last) and the list length, generate full responses, and judge the whole response with
-HarmBench's classifier \citep{mazeika2024harmbench} plus a refusal-phrase detector whose false-positive rate
-we measure on all-benign lists (\cref{sec:behaviour}).
-\item \textbf{Do models actually comply with list-embedded harmful requests?} We measure attack success with
-two prompt sources (JailbreakBench and AdvBench), three list templates, and up to 32 items, on three model
-families (\cref{sec:behaviour}).
-\item \textbf{Where is the refusal decision represented?} We read the difference-of-means refusal direction at
-the last prompt token \emph{and} at the token where the model begins its answer to the harmful item. We also
-test whether adding the direction at that point changes the outcome (\cref{sec:mechanism,sec:steering}).
+\item \textbf{A controlled measurement of refusal in multi-request prompts.} We vary the harmful item's
+position (first, middle, last), list length (up to 32 items) and template, using 200 JailbreakBench and AdvBench
+targets and three model families, about 18{,}000 full-length responses. When the harmful item is not first,
+24-token scoring reports refusal rates as low as 5\%, while the models refuse the item in 81--96\% of
+responses. HarmBench's classifier finds harmful content in at most 15\% of responses in any condition
+(\cref{sec:behaviour}).
+\item \textbf{How far a judge must read.} Refusal detected by a judge that reads the first $N$ tokens reaches
+the full-response value only after about 1{,}000 tokens for Qwen3-14B and Gemma-2-9B (\cref{sec:horizon}).
+\item \textbf{Where models refuse differs by model.} Qwen3-14B and Gemma-2-9B mostly refuse \emph{at the
+item}; Llama-3.1-8B mostly refuses \emph{up front}, before answering any item. Short-horizon judges are
+therefore not just noisy but biased across models (\cref{sec:horizon}).
+\item \textbf{Robustness and reconciliation.} The pattern holds under sampled decoding, a second judge
+(StrongREJECT), Qwen3's reasoning mode, a larger model (Qwen3-32B), and different kinds of benign items. We also show how
+adversarial framings in the style of published embedded-prompt attacks differ from plain lists: the framing,
+not the list, drives attack success (\cref{sec:robust}).
+\item \textbf{Where the decision is made depends on the model.} Ablating the refusal direction
+\citep{arditi2024refusal} only at prompt positions leaves Qwen3-14B's in-list refusals intact but removes most of
+Llama-3.1-8B's, matching where each model refuses, and this held in a preregistered test on held-out behaviours; forcing a compliant opening at the item is also less
+effective for Qwen3-14B than at the start of a response. This extends evidence that refusal outcomes depend on
+how the refusal signal evolves during generation \citep{dahiya2026suppress,yamaguchi2025reasoning} to
+multi-request prompts. We also show that the end-of-prompt read-out mostly reflects the request itself, not a
+list-specific plan (\cref{sec:mechanism}).
 \end{enumerate}
-
-\paragraph{Contributions.} \input{sections/contrib}
 
 \section{Related Work}
 \label{sec:related}
 
-\paragraph{Refusal directions and what they encode.}
-\citet{arditi2024refusal} showed that refusal in chat models is mediated by a single residual-stream direction,
-obtained as a difference of means between harmful and harmless prompts at post-instruction positions.
-\citet{wollschlaeger2025geometry} find multi-dimensional refusal cones. \citet{zhao2025separately} show that
-harmfulness is encoded mainly at instruction tokens and refusal at post-instruction tokens, and that some
-jailbreaks lower the refusal signal without changing the internal harmfulness judgement. All of these read the
-direction on the prompt side. We add the generation side. In multi-request prompts, the relevant ``post-instruction''
-position for the harmful item lies inside the model's own response.
+\paragraph{Embedded and multi-task jailbreaks.} DAP \citep{xiao2024dap}, SequentialBreak
+\citep{saiem2024sequentialbreak}, Deceptive Delight \citep{unit42deceptive} and multi-turn-to-single-turn
+templates \citep{kim2025m2s} place harmful requests among other tasks. SequentialBreak reports high attack
+success for harmful prompts placed late in LLM-written game, dialogue and question-bank framings, and low
+success when the harmful prompt comes first. We separate the effect of plain list structure from that of such
+framings and measure both with a full-response judge.
 
-\paragraph{Attention heads and jailbreaks.}
-Circuit-level work localizes refusal to small sets of attention heads
-\citep{he2026jailbreakscope}. \citet{srivastava2026ara} argue that safety lives in the attention
-\emph{routing} of such heads rather than in the heads as removable parts. Our earlier ``guardrail head''
-claim fits this line of work, but it was measured at a position where the head had no reason to attend to the
-harmful request. We re-measure it at the item's answer onset.
+\paragraph{Evaluating refusal.} Keyword and prefix judges are known to overstate jailbreak success
+\citep{souly2024strongreject,zhu2024advprefix}; HarmBench \citep{mazeika2024harmbench} and JailbreakBench
+\citep{chao2024jailbreakbench} standardize classifier-based judging. We document the opposite error for
+multi-request prompts: reading too \emph{early} turns refusals into apparent compliance. Long-context safety
+benchmarks \citep{lu2025longsafety,hadeliya2025refusals} face the same issue whenever the harmful content
+appears late in a response.
 
-\paragraph{Distraction and multi-task jailbreaks.}
-DAP \citep{xiao2024dap}, SequentialBreak \citep{saiem2024sequentialbreak} and Deceptive Delight
-\citep{unit42deceptive} hide a harmful request among benign tasks. SequentialBreak reports that placing the
-harmful prompt first gives much lower attack success than placing it later in the chain, and attributes the
-effect, without testing it, to attention imbalance. We test the position effect under a controlled design with
-a full-response judge, and we look inside the model.
+\paragraph{Refusal directions during generation.} Refusal is mediated by a difference-of-means direction
+\citep{arditi2024refusal}, possibly within a multi-dimensional cone \citep{wollschlaeger2025geometry}.
+Harmfulness and refusal are encoded at different positions \citep{zhao2025separately}. Most closely related,
+\citet{dahiya2026suppress} find, for seven jailbreak classes, that the direction is a reliable causal control
+signal but that jailbreak success is better explained by how attacks interact with it over the course of
+generation than by its value at the end of the prompt. Prompt representations are known to encode attributes
+of the whole upcoming response \citep{dong2025planning}, and reasoning models can decide to refuse inside their
+chain of thought \citep{yamaguchi2025reasoning}. Our mechanistic results apply these ideas to multi-request
+prompts; we do not claim them as new mechanisms.
 
-\paragraph{Long-context safety.}
-Many-shot jailbreaking \citep{anil2024manyshot}, LongSafety \citep{lu2025longsafety} and studies of long-context
-agents \citep{hadeliya2025refusals} show that safety behaviour can shift with context length and content type.
-Our results separate list \emph{structure} and the harmful item's \emph{position} from raw length.
+\paragraph{Safety alignment depth.} \citet{qi2025shallow} show that alignment concentrates on the first few
+output tokens and that forcing a compliant opening often defeats it. List prompts let us ask the same question
+deep inside a response.
 
-\paragraph{Shallow alignment and judge reliability.}
-\citet{qi2025shallow} argue that safety alignment mostly shapes the first few output tokens. List prompts test
-this directly, since the harmful item's answer begins deep in the response. On the evaluation side, keyword
-and prefix judges are known to overstate jailbreak success
-\citep{souly2024strongreject,zhu2024advprefix}. We document the opposite error, which comes from reading too
-\emph{early}: short-horizon judges score deferred refusals as compliance.
+\paragraph{Probes and attention.} Linear probes on activations are cheap safety monitors
+\citep{cunningham2025cheap,mckenzie2025highstakes}; attention heads that route refusal have been located
+\citep{he2024jailbreaklens} and attacked \citep{srivastava2026ara}. We use both only as analysis tools.
 
 \section{Setup}
 \label{sec:setup}
 
-\paragraph{Models.} Qwen3-14B \citep{qwen3} (thinking disabled), Gemma-2-9B-it \citep{gemma2} and Llama-3.1-8B-Instruct \citep{llama3}. All
-generation is greedy (vLLM; \citealp{kwon2023vllm}) with a budget of $320(k{+}1){+}256$ new tokens for a list with $k$
-benign items, capped by the context window. At most 1.2\% of responses per model hit the cap.
+\paragraph{Models.} Qwen3-14B \citep{qwen3} with thinking disabled, Gemma-2-9B-it \citep{gemma2} and
+Llama-3.1-8B-Instruct \citep{llama3}, plus Qwen3-32B and Qwen3-14B in thinking mode for robustness. Generation is
+greedy (vLLM; \citealp{kwon2023vllm}) with a budget of $320(k{+}1){+}256$ new tokens for a list with $k$ benign
+items, capped by the context window. At most 1.2\% of responses per model hit the cap.
 
-\paragraph{Prompts.} Harmful targets are the 100 JailbreakBench behaviours \citep{chao2024jailbreakbench}
-and the 100 AdvBench prompts \citep{zou2023advbench} used in our earlier study. Benign list items are Alpaca
-instructions \citep{taori2023alpaca}, disjoint from those used to fit refusal directions. For each target and
-each $k\in\{0,1,3,7,15,31\}$ we sample $k$ benign items once and insert the target \emph{first},
-\emph{in the middle}, or \emph{last}, so that within a $(\text{target},k)$ cell only the position changes. The
-main template is the earlier study's wording (``I have several requests for you to handle in order: 1.~\dots''). At
-$k\in\{3,15\}$ we add a bulleted template and a ``Task~$i$:'' to-do-list template. As an over-refusal control,
-100 benign Alpaca targets are placed in the same lists (\cref{app:prompts} gives examples).
+\paragraph{Prompts.} Harmful targets are the 100 JailbreakBench behaviours \citep{chao2024jailbreakbench} and
+100 AdvBench prompts \citep{zou2023advbench}. Benign list items are Alpaca instructions \citep{taori2023alpaca}.
+For each target and $k\in\{0,1,3,7,15,31\}$ we sample $k$ benign items once and insert the target \emph{first},
+\emph{in the middle} or \emph{last}, so only the position changes within a (target, $k$) cell. The main template
+reads ``I have several requests for you to handle in order: 1.~\dots''. At $k\in\{3,15\}$ we add a bulleted and
+a ``Task~$i$:'' template. As an over-refusal control, 100 benign Alpaca targets are placed in the same lists.
 
-\paragraph{Judging.} Only one item per list is harmful, so we judge the \emph{whole} response:
+\paragraph{Judging.} Only one list item is harmful, so we judge the \emph{whole} response:
 \begin{itemize}[leftmargin=*,itemsep=1pt,topsep=1pt]
-\item \textbf{ASR}: the HarmBench Llama-2-13B classifier \citep{mazeika2024harmbench} with its standard prompt.
-It is applied to 512-token windows of the response, and a response counts as harmful if any window is.
+\item \textbf{ASR}: the HarmBench Llama-2-13B classifier \citep{mazeika2024harmbench} on 512-token windows of
+the response; harmful if any window is.
 \item \textbf{Target refused}: one of 33 refusal phrases appears before the model starts answering list items,
-inside the harmful item's answer, or anywhere in the response if the model skipped the item
-(\cref{app:judge}). Phrases inside \emph{other} items' answers do not count. With a benign target in the
-same position, this rule fires on 0--3\% (\QwenBenignFP, \GemmaBenignFP, \LlamaBenignFP\ for Qwen, Gemma, Llama)\ of responses.
-\item \textbf{Refusal locus}: \emph{upfront} if the refusal appears before the model starts answering list
-items (e.g.\ ``I can't help with Task 3, but here are the others''), otherwise \emph{in-item}.
-\item \textbf{Earlier metric}: refusal substrings in the first 24 generated tokens, exactly as in our earlier
-study. Because decoding is greedy, these 24 tokens are identical to the 24-token generations used there.
+inside the harmful item's answer, or anywhere if the item is skipped. Phrases in \emph{other} items' answers do
+not count, because benign items attract capability disclaimers (``I can't draw''). With a benign target, this
+rule fires on 0--3\% of responses.
+\item \textbf{Refusal locus}: \emph{up front} if the refusal precedes the list answers, \emph{in the item}
+otherwise.
+\item \textbf{24-token metric}: refusal substrings in the first 24 generated tokens, exactly as in our earlier
+study. With greedy decoding these tokens are identical to the earlier 24-token generations.
 \end{itemize}
+\Cref{app:judge} gives details; \cref{app:prompts} shows prompts and responses.
 
-\paragraph{Refusal direction and directional ablation.}
-For each layer $\ell$ we take the last-prompt-token residual stream $h_\ell$ over 256 harmful (AdvBench) and
-256 harmless (Alpaca) training prompts and set
-$\dhat_\ell = (\mu^{\text{harm}}_\ell-\mu^{\text{harmless}}_\ell)/\lVert\mu^{\text{harm}}_\ell-\mu^{\text{harmless}}_\ell\rVert$
-\citep{arditi2024refusal}. \emph{Directional ablation} of $\dhat$ means replacing the output of every decoder
-layer $x$ by $x-(x^\top\dhat)\,\dhat$, so the residual stream has zero component along $\dhat$ everywhere. We
-pick the layer whose ablation most reduces refusal on 32 held-out harmful prompts while keeping refusal on
-32 harmless prompts at or below 5\%. This gives layer 36 of 40 for Qwen3-14B (as in our earlier study) and
-layer 22 of 42 for Gemma-2-9B-it, and layer 10 of 32 for Llama-3.1-8B. \Cref{app:validity} summarizes the confound controls run on
-the Qwen3-14B direction in the earlier study.
-
-\section{Short-horizon judges misread list prompts; models mostly refuse late}
+\section{Short-horizon judges misread multi-request prompts}
 \label{sec:behaviour}
 
 \input{sections/results_behaviour}
 
-\section{Where is the refusal decision represented?}
+\section{How far must a judge read, and where do models refuse?}
+\label{sec:horizon}
+
+\input{sections/results_horizon}
+
+\section{Robustness}
+\label{sec:robust}
+
+\input{sections/results_robust}
+
+\section{Supporting mechanistic analysis}
 \label{sec:mechanism}
 
 \input{sections/results_mechanism}
 
-\section{Adding the refusal direction at the decision point}
-\label{sec:steering}
-
-\input{sections/results_steering}
-
-\section{Discussion}
+\section{Recommendations and limitations}
 \label{sec:discussion}
 
 \input{sections/discussion}

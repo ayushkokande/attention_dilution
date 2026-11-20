@@ -1,16 +1,17 @@
-Safety evaluations and mechanistic analyses of refusal usually assume that a model's response to a harmful
-request begins at its first output token. We show that this assumption breaks for prompts that bundle a harmful
-request with benign ones, and that it produced a false result in our own earlier work. There, scoring the first
-24 generated tokens suggested that a numbered list of benign tasks collapses Qwen3-14B's refusal after about 31
-tokens, and probes at the last prompt token appeared to explain why. We re-measure this setting with the harmful
-item's position controlled, full-length generations, and whole-response judging: three model families, 200
-JailbreakBench and AdvBench targets, lists of up to 32 items, three templates, about 18{,}000 responses. When the
-harmful item is not first, the 24-token judge reports refusal rates as low as \QwenMiddleVone\ (Qwen3-14B) and
-\GemmaMiddleVone\ (Gemma-2-9B). Yet the models refuse the item in \QwenMiddleRef\ and \GemmaMiddleRef\ of those
-responses, and HarmBench's classifier finds harmful content in at most 15\% of responses in any
-condition. Models answer the benign items and refuse when they reach the harmful one (Qwen, Gemma), or refuse it
-up front (Llama). At the last prompt token, list structure shrinks the refusal-direction projection and can flip its sign
-(16\% of Qwen3-14B list prompts). Yet the projection still ranks responses by whether the model will eventually refuse the item
-(AUC up to \QwenAUCLastBest), and the same information is readable at the item's answer onset. Adding the
-unnormalized refusal direction at that point lowers harmful compliance. Short-horizon judges and last-token
-probes are therefore unreliable for multi-request prompts, and we give a protocol that avoids both problems.
+Safety evaluations usually score whether a model's response to a harmful request opens with a refusal. We show
+that this misreads prompts that bundle a harmful request with benign ones, and that it produced a false result
+in our own earlier work: scoring the first 24 generated tokens suggested that a short numbered list of benign
+tasks collapses Qwen3-14B's refusal. We re-measure this setting with the harmful item's position controlled and
+full responses judged: four open models (8--32B), 200 JailbreakBench and AdvBench targets, lists of up to 32
+items, three templates, about 20{,}000 responses. When the harmful item is not first, 24-token scoring reports
+refusal rates as low as 5\%, yet the models refuse the item in 81--96\% of responses and HarmBench's classifier
+finds harmful content in at most 15\% in any condition. Detected refusal reaches its full-response value only
+after about 1{,}000 tokens, and models differ in where they refuse: Qwen3-14B and Gemma-2-9B at the item,
+Llama-3.1-8B up front. A short-horizon judge therefore ranks models by where they refuse, not whether they do.
+The pattern holds under sampling, a second judge, reasoning mode and other kinds of benign content; adversarial
+framings, not list structure, account for the high success rates reported for embedded-prompt attacks.
+Mechanistically, ablating the refusal direction only at prompt positions leaves Qwen3-14B's in-list refusals
+intact but removes most of Llama-3.1-8B's, in line with where each model refuses (a preregistered test on
+held-out behaviours confirmed this), and the end-of-prompt read-out
+mostly reflects the request itself rather than a list-specific plan. We give a protocol for evaluating
+multi-request prompts.
