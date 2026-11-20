@@ -91,7 +91,7 @@ for m in MODELS:
 
 # ---------------- Table 3: probes
 plines = [r"\begin{tabular}{l" + "c" * len(MODELS) + "}", r"\toprule", "Projection (\\% of harmful-alone value) & " + " & ".join(NICE[m] for m in MODELS) + r" \\", r"\midrule"]
-prow = {k: [] for k in ["bare_h", "bare_b", "last_first", "last_last", "onset_ref", "onset_comply", "onset_benign_item", "auc_onset", "auc_last", "neg_last_frac", "neg_last_asr", "pos_last_asr", "attn_last", "attn_onset", "attn_benign_own"]}
+prow = {k: [] for k in ["auc_bare", "bare_h", "bare_b", "last_first", "last_last", "onset_ref", "onset_comply", "onset_benign_item", "auc_onset", "auc_last", "neg_last_frac", "neg_last_asr", "pos_last_asr", "attn_last", "attn_onset", "attn_benign_own"]}
 for m in MODELS:
     p = OUT / f"probe_{m}.jsonl"
     if not p.exists():
@@ -127,6 +127,13 @@ for m in MODELS:
     bo, bl = int(np.nanargmax(aon)), int(np.nanargmax(ala))
     prow["auc_onset"].append(f"{ar:.2f} / {aon[bo]:.2f} ({bo})")
     prow["auc_last"].append(f"{al:.2f} / {ala[bl]:.2f} ({bl})")
+    # control: the same target's readout when asked ALONE, at the best list layer
+    bare = {(j["src"], j["pidx"]): a for a, j in pr if j["is_harmful"] and j["k"] == 0}
+    hpb = [(a, j) for a, j in hp if (j["src"], j["pidx"]) in bare]
+    abare = auc([bare[(j["src"], j["pidx"])]["proj_last"][bl] for a, j in hpb if j["outcome"] == "REFUSE"],
+                [bare[(j["src"], j["pidx"])]["proj_last"][bl] for a, j in hpb if j["outcome"] == "COMPLY"])
+    prow["auc_bare"].append(f"{abare:.2f} ({bl})")
+    mac(f"{TAG[m]}AUCBare", f"{abare:.2f}")
     mac(f"{TAG[m]}AUCOnsetBest", f"{aon[bo]:.2f}"); mac(f"{TAG[m]}AUCLastBest", f"{ala[bl]:.2f}")
     (DST / f"auc_layers_{m}.json").write_text(json.dumps(dict(onset=aon, last=ala, L=L)))
     neg = [(a, j) for a, j in hp if a["proj_last"][L] < 0]
@@ -151,13 +158,14 @@ labels = {
     "onset_benign_item": r"benign item's answer onset",
     "auc_onset": r"AUC refused vs.\ complied, answer onset (sel.\ / best layer)",
     "auc_last": r"AUC refused vs.\ complied, last prompt token (sel.\ / best)",
+    "auc_bare": r"\quad control: same request \emph{alone}, last prompt token (layer)",
     "neg_last_frac": r"lists with negative last-token projection",
     "neg_last_asr": r"\quad ASR / target refused, if negative",
     "pos_last_asr": r"\quad ASR / target refused, if positive",
 }
 for k, lab in labels.items():
     plines.append(lab + " & " + " & ".join(prow[k]) + r" \\")
-    if k in ("bare_b", "last_last", "onset_benign_item", "auc_last"):
+    if k in ("bare_b", "last_last", "onset_benign_item", "auc_bare"):
         plines.append(r"\midrule")
 plines += [r"\bottomrule", r"\end{tabular}"]
 (DST / "tab_probe.tex").write_text("\n".join(plines))

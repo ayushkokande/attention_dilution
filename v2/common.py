@@ -231,6 +231,22 @@ def build_variant_grid(model: str, variant: str) -> List[Row]:
             for k in (0, 3, 15):
                 for pos in (["first"] if k == 0 else ["first", "last"]):
                     add("alpaca", j, b, False, k, pos, "numbered")
+    elif variant == "content":
+        # Greg's content-type confound: same list structure, different kinds of benign items.
+        from datasets import load_dataset
+        pools = {
+            "alpaca": pool,
+            "code": [r["text"].strip() for r in load_dataset("google-research-datasets/mbpp", "full", split="train")],
+            "math": [r["question"].strip() for r in load_dataset("openai/gsm8k", "main", split="train")],
+            "qa": [r["question"].strip().rstrip("?") + "?" for r in load_dataset("google-research-datasets/nq_open", split="train")][:5000],
+        }
+        for h in harmful:
+            for cname, cpool in pools.items():
+                for pos in ("middle", "last"):
+                    ben = pick_benign(cpool, f"{h['src']}{h['idx']}{cname}", 7)
+                    user, ti, n = build_list_prompt(h["behavior"], ben, pos, "numbered")
+                    rows.append(Row(f"{model}|{h['src']}|{h['idx']}|H|k7|{pos}|numbered|{cname}", model, h["src"], h["idx"],
+                                    h["behavior"], True, 7, pos, "numbered", ti, n, user))
     elif variant == "framing":
         for h in harmful:
             if h["src"] != "jbb":

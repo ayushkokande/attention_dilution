@@ -22,13 +22,13 @@ def main():
     ap.add_argument("--backend", default="vllm", choices=["vllm", "hf"])
     ap.add_argument("--hf-path", default=None, help="override weights path (smoke tests)")
     ap.add_argument("--tp", type=int, default=1)
-    ap.add_argument("--variant", default=None, choices=[None, "thinking", "sample", "scale", "framing"],
+    ap.add_argument("--variant", default=None, choices=[None, "thinking", "sample", "scale", "framing", "content"],
                     help="thinking: Qwen3 with reasoning on; sample: T=0.7/top-p 0.95, 3 seeds. Reduced grid.")
     args = ap.parse_args()
 
     tag = f"_{args.variant}" if args.variant else ""
     out = OUT / f"gen{tag}_{args.model}{'_smoke' if args.smoke else ''}.jsonl"
-    rows = build_variant_grid(args.model, args.variant) if args.variant in ("scale", "framing") \
+    rows = build_variant_grid(args.model, args.variant) if args.variant in ("scale", "framing", "content") \
         else build_grid(args.model, smoke=args.smoke)
     if args.variant in ("thinking", "sample"):   # reduced grid: numbered template, k in {0,3,15}, first/last
         rows = [r for r in rows if r.template == "numbered" and r.k in (0, 3, 15) and r.pos in ("first", "last")]
