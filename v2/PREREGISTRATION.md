@@ -61,3 +61,17 @@ Our locus hypothesis ("where a model refuses predicts where it carries the decis
 10. Held-out, lists pooled: prompt-only ablation lowers Llama-3.1-70B's target refusal by **less than 30 points**
     (it behaves like Qwen3-14B, not Llama-3.1-8B). Predictions 6 and 10 cannot both hold; prediction 6 stays as
     registered and both are reported. Prediction 7 (alone drops >= 30 points) is unchanged.
+
+## Gemma-2-27B result and amendment to direction selection (2026-11-20 ~16:25 UTC, before the 70B direction run)
+
+Predictions 8–9 (Gemma-2-27B) are **inconclusive, not confirmed**. The selected layer (41 of 46) satisfied the
+selection rule because ablating it produced repetitive, incoherent text, which the refusal check scores as "not
+refusing". Under prompt-only ablation, all 300 held-out responses ran to the length limit with repetitive text
+(97% flagged by the degeneracy check below; 0% without ablation). Refusal and ASR both read 0%, which is
+uninterpretable.
+
+Amendment, applied before the Llama-3.1-70B direction is extracted: layer selection now also requires ≤ 10%
+degenerate outputs (fewer than half of the word 4-grams distinct) on the harmful and harmless selection prompts
+under ablation (`v2/extract_direction.py`). The same check finds 0% degenerate outputs in Llama-3.1-8B's
+prompt-only-ablated held-out responses, so the earlier confirmations (1–4) are unaffected. Predictions 6, 7 and 10
+for Llama-3.1-70B stand as registered.

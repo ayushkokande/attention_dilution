@@ -3,7 +3,8 @@
 d_l = normalize(mean_harmful(h_l[last]) - mean_harmless(h_l[last]))   on splits.json harmful_train/harmless_train
 Layer selection: directional ablation of d_l at every layer output on 32 held-out harmful prompts
 (splits.json harmful_baseline[:32], disjoint from all E1 prompts); pick the layer with the lowest
-post-ablation refusal subject to <=5% refusal on 32 harmless prompts; ties -> deeper layer.
+post-ablation refusal subject to <=5% refusal on 32 harmless prompts and <=10% degenerate (repetitive)
+outputs on either set; ties -> deeper layer. The coherence condition was added after Gemma-2-27B.
 
 Usage: python v2/extract_direction.py --model llama31-8b
 Output: results/v2/dirs_<model>.pt  {d_hat [L,d], norms [L], layer, sweep}
@@ -31,17 +32,31 @@ def last_token_acts(model, tok, model_name, prompts, bs=16):
     return acc / len(prompts)
 
 
+def degenerate(text: str) -> bool:
+    """Repetitive or empty output: fewer than half of the word 4-grams are distinct."""
+    w = text.split()
+    if len(w) < 8:
+        return len(w) == 0
+    grams = [tuple(w[i:i + 4]) for i in range(len(w) - 3)]
+    return len(set(grams)) / len(grams) < 0.5
+
+
 @torch.no_grad()
-def refusal_rate(model, tok, model_name, prompts, hk, bs=16, max_new=64):
+def refusal_rate(model, tok, model_name, prompts, hk, bs=16, max_new=64, stats=None):
     tok.padding_side = "left"
     n = 0
+    deg = 0
     for s in range(0, len(prompts), bs):
         texts = [chat_text(tok, model_name, p) for p in prompts[s:s + bs]]
         enc = tok(texts, return_tensors="pt", padding=True, add_special_tokens=False, return_token_type_ids=False).to(model.device)
         with hooks(hk):
             g = model.generate(**enc, max_new_tokens=max_new, do_sample=False, pad_token_id=tok.pad_token_id)
         for seq in g:
-            n += item_refusal(tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True))
+            text = tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True)
+            n += item_refusal(text)
+            deg += degenerate(text)
+    if stats is not None:
+        stats["degenerate"] = deg / len(prompts)
     return n / len(prompts)
 
 
@@ -67,11 +82,16 @@ def main():
     cands = range(int(0.25 * L), int(0.9 * L) + 1, 2)
     for l in cands:
         hk = ablation_hooks(model, d_hat[l].to(model.device))
-        rh = refusal_rate(model, tok, args.model, hsel, hk)
-        rb = refusal_rate(model, tok, args.model, bsel, hk)
-        sweep.append(dict(layer=l, harmful_post=rh, harmless_post=rb))
-        print(f"[dir] layer {l}: harmful {rh:.2f} harmless {rb:.2f} (intact harmful {base:.2f})", flush=True)
-    ok = [s for s in sweep if s["harmless_post"] <= 0.05] or sweep
+        sh, sb = {}, {}
+        rh = refusal_rate(model, tok, args.model, hsel, hk, stats=sh)
+        rb = refusal_rate(model, tok, args.model, bsel, hk, stats=sb)
+        sweep.append(dict(layer=l, harmful_post=rh, harmless_post=rb, deg_harmful=sh["degenerate"], deg_harmless=sb["degenerate"]))
+        print(f"[dir] layer {l}: harmful {rh:.2f} harmless {rb:.2f} degenerate {sh['degenerate']:.2f}/{sb['degenerate']:.2f} "
+              f"(intact harmful {base:.2f})", flush=True)
+    # Coherence check (added 2026-11-20 after Gemma-2-27B's selected layer produced repetitive text, which the
+    # refusal check alone scores as "not refusing"): ablated outputs must stay coherent.
+    ok = [s for s in sweep if s["harmless_post"] <= 0.05 and max(s["deg_harmful"], s["deg_harmless"]) <= 0.10] \
+        or [s for s in sweep if s["harmless_post"] <= 0.05] or sweep
     best = min(ok, key=lambda s: (s["harmful_post"], -s["layer"]))
     torch.save(dict(d_hat=d_hat.cpu(), norms=norms.cpu(), layer=best["layer"], sweep=sweep, intact=base),
                OUT / f"dirs_{args.model}.pt")
