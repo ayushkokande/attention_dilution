@@ -12,6 +12,8 @@ from dataclasses import asdict
 
 from common import MODELS, OUT, build_grid, chat_text, max_new_tokens, read_jsonl
 
+SEED_BASE = 1234
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -20,10 +22,17 @@ def main():
     ap.add_argument("--backend", default="vllm", choices=["vllm", "hf"])
     ap.add_argument("--hf-path", default=None, help="override weights path (smoke tests)")
     ap.add_argument("--tp", type=int, default=1)
+    ap.add_argument("--variant", default=None, choices=[None, "thinking", "sample"],
+                    help="thinking: Qwen3 with reasoning on; sample: T=0.7/top-p 0.95, 3 seeds. Reduced grid.")
     args = ap.parse_args()
 
-    out = OUT / f"gen_{args.model}{'_smoke' if args.smoke else ''}.jsonl"
+    tag = f"_{args.variant}" if args.variant else ""
+    out = OUT / f"gen{tag}_{args.model}{'_smoke' if args.smoke else ''}.jsonl"
     rows = build_grid(args.model, smoke=args.smoke)
+    if args.variant:   # reduced grid: numbered template, k in {0,3,15}, first/last
+        rows = [r for r in rows if r.template == "numbered" and r.k in (0, 3, 15) and r.pos in ("first", "last")]
+    if args.variant == "thinking":
+        MODELS[args.model] = dict(MODELS[args.model], chat_kwargs={"enable_thinking": True})
     done = {r["rid"] for r in read_jsonl(out)} if out.exists() else set()
     todo = [r for r in rows if r.rid not in done]
     print(f"[gen] {args.model}: {len(rows)} rows, {len(todo)} to do -> {out}", flush=True)
@@ -46,18 +55,33 @@ def main():
         CH = 512
         for s in range(0, len(todo), CH):
             chunk, cp, pl = todo[s:s + CH], prompts[s:s + CH], plen[s:s + CH]
-            sps = [SamplingParams(temperature=0.0, max_tokens=max(16, min(max_new_tokens(r.k), max_len - n - 8)))
-                   for r, n in zip(chunk, pl)]
+            extra = 4096 if args.variant == "thinking" else 0
+            if args.variant == "sample":
+                sps = [SamplingParams(temperature=0.7, top_p=0.95, n=3, seed=SEED_BASE + i,
+                                      max_tokens=max(16, min(max_new_tokens(r.k), max_len - n - 8)))
+                       for i, (r, n) in enumerate(zip(chunk, pl))]
+            else:
+                sps = [SamplingParams(temperature=0.0, max_tokens=max(16, min(max_new_tokens(r.k) + extra, max_len - n - 8)))
+                       for r, n in zip(chunk, pl)]
             outs = llm.generate(cp, sps, use_tqdm=False)
             with open(out, "a") as f:
                 for r, p, o in zip(chunk, cp, outs):
-                    c = o.outputs[0]
-                    ids = list(c.token_ids)
-                    rec = asdict(r)
-                    rec.update(response=c.text, n_gen=len(ids), finish=c.finish_reason,
-                               first24=tok.decode(ids[:24], skip_special_tokens=True),
-                               n_prompt=len(o.prompt_token_ids))
-                    f.write(json.dumps(rec) + "\n")
+                    for si, c in enumerate(o.outputs):
+                        ids = list(c.token_ids)
+                        rec = asdict(r)
+                        text, thinking = c.text, None
+                        if "</think>" in text:          # thinking variant: judge only the visible answer
+                            thinking, text = text.split("</think>", 1)
+                            text = text.lstrip()
+                        elif args.variant == "thinking":  # ran out of budget inside the reasoning
+                            thinking, text = text, ""
+                        f24 = tok.decode(tok(text, add_special_tokens=False)["input_ids"][:24]) if thinking is not None \
+                            else tok.decode(ids[:24], skip_special_tokens=True)
+                        if args.variant == "sample":
+                            rec["rid"] = f"{r.rid}|s{si}"
+                        rec.update(response=text, thinking=thinking, n_gen=len(ids), finish=c.finish_reason,
+                                   first24=f24, n_prompt=len(o.prompt_token_ids), variant=args.variant, sample=si)
+                        f.write(json.dumps(rec) + "\n")
             print(f"[gen] {s + len(chunk)}/{len(todo)}  {time.time() - t0:.0f}s", flush=True)
     else:
         import torch
