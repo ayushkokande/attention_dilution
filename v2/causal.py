@@ -151,10 +151,14 @@ def onset_prefix(tok, model_name, r):
 def run_ablate(args, model, tok, rows, out, done):
     L = layer_of(args.model)
     d = load_dirs(args.model, model.config.num_hidden_layers)[L].to(model.device)
-    pick = [r for r in rows if r["is_harmful"] and r["template"] == "numbered" and r["pidx"] < args.n // 2
-            and ((r["k"] == 0) or (r["k"] in (3, 7) and r["pos"] == "last"))]
+    if args.heldout:
+        pick = heldout_rows(args.model)
+        conds = {"none": None, "prompt": (0, "T")}
+    else:
+        pick = [r for r in rows if r["is_harmful"] and r["template"] == "numbered" and r["pidx"] < args.n // 2
+                and ((r["k"] == 0) or (r["k"] in (3, 7) and r["pos"] == "last"))]
+        conds = {"none": None, "prompt": (0, "T"), "gen": ("T", None), "all": (0, None)}
     pos = Pos(model)
-    conds = {"none": None, "prompt": (0, "T"), "gen": ("T", None), "all": (0, None)}
     for cname, span in conds.items():
         todo = [r for r in pick if f"{r['rid']}|abl|{cname}" not in done]
         todo.sort(key=lambda r: r["k"])
@@ -177,6 +181,27 @@ def run_ablate(args, model, tok, rows, out, done):
                            finish="length" if n >= max_new_tokens(k) else "stop", layer=L)
                 write(out, rec)
             print(f"[ablate] {cname} k={k} done ({len(kr)})", flush=True)
+
+
+def heldout_rows(model_name):
+    """Held-out confirmation set: 100 HarmBench 'standard' behaviours not in JBB/AdvBench (exact match),
+    placed alone or last in 4- and 8-item numbered lists. Fixed seed; never used before this run."""
+    import csv
+    from common import Row, build_list_prompt, load_benign_pool, load_harmful, pick_benign
+    seen = {h["behavior"].strip().lower() for h in load_harmful()}
+    hb = [r["Behavior"].strip() for r in csv.DictReader(open(OUT / "harmbench_text_all.csv"))
+          if r["FunctionalCategory"] == "standard" and r["Behavior"].strip().lower() not in seen]
+    random.Random(2027).shuffle(hb)
+    pool = load_benign_pool()
+    rows = []
+    for i, t in enumerate(hb[:100]):
+        for k in (0, 3, 7):
+            pos = "first" if k == 0 else "last"
+            user, ti, n = build_list_prompt(t, pick_benign(pool, f"hb{i}", k), pos, "numbered")
+            rows.append(dict(rid=f"{model_name}|harmbench|{i}|H|k{k}|{pos}|numbered", model=model_name, src="harmbench",
+                             pidx=i, target=t, is_harmful=True, k=k, pos=pos, template="numbered",
+                             target_item=ti, n_items=n, user=user))
+    return rows
 
 
 def run_prefill(args, model_name, rows, out, done):
@@ -275,9 +300,10 @@ def main():
     ap.add_argument("--hf-path", default=None)
     ap.add_argument("--judged", default=None)
     ap.add_argument("--max-new", type=int, default=None)
+    ap.add_argument("--heldout", action="store_true", help="ablate: fresh HarmBench targets (confirmation run)")
     args = ap.parse_args()
-    rows = read_jsonl(args.judged or OUT / f"judged_{args.model}.jsonl")
-    out = OUT / f"gen_{args.exp}_{args.model}.jsonl"
+    rows = [] if args.heldout else read_jsonl(args.judged or OUT / f"judged_{args.model}.jsonl")
+    out = OUT / f"gen_{args.exp}{'ho' if args.heldout else ''}_{args.model}.jsonl"
     done = {json.loads(l)["rid"] for l in open(out)} if out.exists() else set()
     t0 = time.time()
     if args.exp == "prefill":
