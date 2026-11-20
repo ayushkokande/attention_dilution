@@ -75,3 +75,7 @@ degenerate outputs (fewer than half of the word 4-grams distinct) on the harmful
 under ablation (`v2/extract_direction.py`). The same check finds 0% degenerate outputs in Llama-3.1-8B's
 prompt-only-ablated held-out responses, so the earlier confirmations (1–4) are unaffected. Predictions 6, 7 and 10
 for Llama-3.1-70B stand as registered.
+
+Rerun of the Gemma-2-27B test (queued 2026-11-20 ~16:45 UTC): same predictions 8–9, same held-out set and
+conditions, direction re-extracted with the coherence-checked selection rule. The first attempt's outputs are
+kept (`*_attempt1`) and both attempts are reported.
