@@ -41,6 +41,8 @@ def main():
     ap.add_argument("--max-new", type=int, default=160)
     ap.add_argument("--hf-path", default=None)
     ap.add_argument("--judged", default=None)
+    ap.add_argument("--shard", type=int, default=0)
+    ap.add_argument("--nshards", type=int, default=1)
     args = ap.parse_args()
     cfg = MODELS[args.model]
     rows = read_jsonl(args.judged or OUT / f"judged_{args.model}.jsonl")
@@ -62,7 +64,12 @@ def main():
     tok.padding_side = "left"
     vec = raw_vec(args.model, L)
     out = OUT / f"gen_steer_{args.model}.jsonl"
-    done = {json.loads(l)["rid"] for l in open(out)} if out.exists() else set()
+    done = set()
+    for f in [out] + sorted(OUT.glob(f"gen_steer_{args.model}.part*.jsonl")):
+        if f.exists():
+            done |= {json.loads(l)["rid"] for l in open(f) if l.strip()}
+    if args.nshards > 1:
+        out = OUT / f"gen_steer_{args.model}.part{args.shard}.jsonl"
 
     jobs = []
     for r in items:
@@ -73,6 +80,7 @@ def main():
                 rid = f"{r['rid']}|steer|{mode}|a{a}"
                 if rid not in done:
                     jobs.append((rid, r, prefix, a, mode))
+    jobs = [j for i, j in enumerate(jobs) if i % args.nshards == args.shard]
     print(f"[steer] {len(jobs)} generations", flush=True)
     for s in range(0, len(jobs), args.bs):
         batch = jobs[s: s + args.bs]

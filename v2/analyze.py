@@ -216,8 +216,8 @@ if MODELS:
     for j, m in enumerate(MODELS):
         g = S[m]["grid"]
         ks = sorted({int(x.split("_")[0][1:]) for x in g})
-        for row, (metric, title) in enumerate([("v1_24", "v1 metric: refusal in first 24 tokens"),
-                                               ("asr", "HarmBench ASR on the harmful item")]):
+        for row, (metric, title) in enumerate([("v1_24", "refusal in first 24 tokens"),
+                                               ("asr", "HarmBench ASR (full response)")]):
             ax = axes[row, j]
             for pos in ("first", "middle", "last"):
                 xs, ys, lo, hi = [], [], [], []
@@ -243,24 +243,29 @@ if MODELS:
 
     pm = [m for m in MODELS if "probe_profiles" in S[m]]
     if pm:
-        fig, axes = plt.subplots(1, len(pm), figsize=(3.3 * len(pm), 2.6), squeeze=False)
+        fig, axes = plt.subplots(1, len(pm), figsize=(3.3 * len(pm), 2.7), squeeze=False)
         for j, m in enumerate(pm):
             ax = axes[0, j]
-            pr = S[m]["probe_profiles"]
-            sty = {"H_bare": ("k", "-", "harmful, bare (last prompt tok)"), "B_bare": ("gray", "-", "benign, bare"),
-                   "H_last_last": (C["last"], "--", "harmful last in list: last prompt tok"),
-                   "H_last_first": (C["first"], "--", "harmful first in list: last prompt tok"),
-                   "H_target": ("#2ca02c", "-", "harmful item: answer onset"),
-                   "B_target": ("#8c564b", ":", "benign item: answer onset")}
+            pr = {k: np.array(v) for k, v in S[m]["probe_profiles"].items()}
+            nL = len(pr["H_bare"])
+            lo = nL // 3
+            scale = np.where(np.abs(pr["H_bare"]) > 1e-6, pr["H_bare"], np.nan)
+            xs = np.arange(lo, nL)
+            sty = {"H_bare": ("k", "-", "harmful alone: last prompt token"), "B_bare": ("gray", "-", "benign alone: last prompt token"),
+                   "H_last_first": (C["first"], "--", "harmful first in list: last prompt token"),
+                   "H_last_last": (C["last"], "--", "harmful last in list: last prompt token"),
+                   "H_target": ("#2ca02c", "-", "harmful item: its answer onset"),
+                   "B_target": ("#8c564b", ":", "benign target: its answer onset")}
             for k_, (c, ls, lab) in sty.items():
                 if k_ in pr:
-                    ax.plot(pr[k_], color=c, ls=ls, label=lab, lw=1.2)
+                    ax.plot(xs, (pr[k_] / scale)[lo:], color=c, ls=ls, label=lab, lw=1.2)
             ax.axhline(0, color="k", lw=0.5)
             ax.axvline(S[m]["probe_layer"], color="k", lw=0.5, ls=":")
-            ax.set_title(NICE[m]); ax.set_xlabel("layer")
+            ax.set_ylim(-0.6, 1.1)
+            ax.set_title(NICE[m], fontsize=9); ax.set_xlabel("layer")
             if j == 0:
-                ax.set_ylabel(r"$\langle h_\ell, \hat d_\ell\rangle$")
-        axes[0, 0].legend(frameon=False, fontsize=6)
+                ax.set_ylabel("projection / harmful-alone value")
+        axes[0, 0].legend(frameon=False, fontsize=6, loc="lower left")
         fig.tight_layout()
         fig.savefig(FIG / "fig_probe.pdf")
         fig.savefig(FIG / "fig_probe.png", dpi=200)
