@@ -20,7 +20,7 @@ import time
 
 import torch
 
-from common import MODELS, OUT, _MARK, chat_text, find_item_markers, read_jsonl
+from common import MODELS, OUT, _MARK, chat_text, find_item_markers, item_refusal, read_jsonl
 from mech import HeadAttnRecorder, char_to_token, hooks, load_model, span_tokens
 
 
@@ -77,7 +77,8 @@ def main():
         if r["n_items"] == 1:
             cut = min(len(resp), 400)
         else:
-            if tgt in marks:
+            upfront = bool(marks) and item_refusal(resp[: min(marks.values())])
+            if tgt in marks and not upfront:   # skip when the target was refused before the list answers
                 pos_chars["target"] = content_start(resp, marks[tgt])
             ben = [i for i in marks if i != tgt]
             if ben:

@@ -145,6 +145,18 @@ for m in MODELS:
     lref = [a["proj_last"][L] for a, j in hp if j["outcome"] == "REFUSE"]
     lcom = [a["proj_last"][L] for a, j in hp if j["outcome"] == "COMPLY"]
     s["probe_predicts_outcome"] = dict(auc_target=auc(ref, com), auc_last=auc(lref, lcom), n_refuse=len(ref), n_comply=len(com))
+    # what the last-token readout does predict: whether the response OPENS with a refusal (v1's 24-token label)
+    allh = [(P[i], J[i]) for i in P if i in J and J[i]["is_harmful"] and J[i]["k"] > 0]
+    o_ref = [a["proj_last"][L] for a, j in allh if j["v1_24"]]
+    o_non = [a["proj_last"][L] for a, j in allh if not j["v1_24"]]
+    # among responses that do NOT open with a refusal, can the last-token readout tell later item refusal from compliance?
+    d_ref = [a["proj_last"][L] for a, j in allh if not j["v1_24"] and j["outcome"] == "REFUSE"]
+    d_com = [a["proj_last"][L] for a, j in allh if not j["v1_24"] and j["outcome"] == "COMPLY"]
+    t_ref = [a["proj_target"][L] for a, j in allh if not j["v1_24"] and j["outcome"] == "REFUSE" and "proj_target" in a]
+    t_com = [a["proj_target"][L] for a, j in allh if not j["v1_24"] and j["outcome"] == "COMPLY" and "proj_target" in a]
+    s["probe_last_vs_opening"] = dict(auc_opening_refusal=auc(o_ref, o_non), n_open_ref=len(o_ref), n_open_non=len(o_non),
+                                      deferred_auc_last=auc(d_ref, d_com), deferred_auc_target=auc(t_ref, t_com),
+                                      n_deferred_refuse=len(d_ref), n_deferred_comply=len(d_com))
     # harmful-vs-benign target separation at target position (k>0)
     bt = [P[i]["proj_target"][L] for i in P if i in J and not J[i]["is_harmful"] and J[i]["k"] > 0 and "proj_target" in P[i]]
     ht = [a["proj_target"][L] for a, j in hp]
