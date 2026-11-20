@@ -46,15 +46,10 @@ in the repository, ask the authors; do not infer it.
 - **Branch:** `v2-deferred-refusal` on GitHub (`ayushkokande/attention_dilution`). Not yet merged to `main`.
 - **Paper:** `paper_v2/main.tex` (preprint) and `paper_v2/main_ndss.tex` (STALA, anonymous). Both compile;
   numbers come from `paper_v2/generated/`.
-- **Finished experiments:** E1–E13 and E16 (Qwen3-32B, Gemma-2-27B behaviour). See `EXPERIMENTS.md`.
-- **In flight on 20 Nov 2026:**
-  - E14 (Gemma-2-27B preregistered ablation);
-  - E15 (Llama-3.1-70B behaviour + preregistered ablation).
-
-  If their results are not in `paper_v2/generated/` (no `HoGemmaBig*` or `HoLlamaHuge*` macros, or
-  `\HUGESENTENCE` still empty), they were not completed. Either rerun them (`v2/run_70b.sh`,
-  `v2/run_27b_mech.sh`, `v2/run_70b_mech.sh`; ~4–6 pod-hours) or remove the 70B/27B ablation mentions and
-  keep the behaviour results.
+- **Finished experiments:** all of E1–E16 (see `EXPERIMENTS.md`). E14 (Gemma-2-27B ablation) is inconclusive
+  because prompt-only ablation broke that model's generation at both layers tried. E15 (Llama-3.1-70B) is complete.
+- **Pods:** all stopped on 20 Nov 2026 at about 20:45 UTC. Terminate them in the RunPod console; stopped pods
+  still bill for storage.
 - **Private data:** full judged files and the human-audit sheet (`human_audit_qwen3-14b.csv`, 120 rows) were
   delivered to the authors as zips (`attention_dilution_v2_fulltext*.zip`). They also exist on the pods under
   `/workspace/results_v2/` until the pods are terminated. Analysis scripts expect them in a directory passed as

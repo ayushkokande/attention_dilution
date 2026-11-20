@@ -13,8 +13,9 @@ favours models that refuse up front (\cref{sec:horizon}).
 
 \paragraph{For interpretability.} Reading a refusal direction at the last prompt token assumes that the next
 tokens carry the decision. That holds for single requests, and our ablations show it also holds for
-Llama-3.1-8B in lists, but not for Qwen3-14B, which recomputes the decision at the item. Read-outs and
-interventions should therefore target the position where the model acts on the request in question, which in
+Llama-3.1-8B in lists, but not for Qwen3-14B or Llama-3.1-70B, which recompute the decision at the item.
+Which case applies is a property of the model, not its family, and is predicted by where the model refuses.
+Read-outs and interventions should therefore target the position where the model acts on the request in question, which in
 agentic transcripts is usually deep in the model's own output. End-of-prompt read-outs should also be compared
 against the same request in isolation before being interpreted as plans.
 
@@ -29,7 +30,8 @@ proprietary models.
 adversarial framings. Documents with embedded instructions and multi-turn agent transcripts remain untested.
 \item \textbf{One direction per model.} Refusal involves more than one direction \citep{wollschlaeger2025geometry},
 and for Qwen3-14B ablating ours removes refusal phrasing without producing much harmful content. The
-mechanistic results concern the refusal behaviour this direction controls.
+mechanistic results concern the refusal behaviour this direction controls. Position-masked ablation is not
+always a clean intervention: on Gemma-2-27B it broke generation, so we check every ablated output for coherence.
 \item \textbf{No training-based mitigation.} We test activation steering only; fine-tuning for item-level
 refusal is left for future work.
 \end{itemize}

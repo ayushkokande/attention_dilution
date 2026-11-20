@@ -93,3 +93,11 @@ Direction: layer 42 of 80, coherence check passed (0% degenerate). Held-out, tar
 - Prediction 6 (family: lists drop ≥ 30 points): **failed** (+6 points).
 - Prediction 7 (alone drops ≥ 30 points): **held** (−37 points).
 - Prediction 10 (locus: lists drop < 30 points): **held**.
+
+## Outcome of the Gemma-2-27B rerun (judged 2026-11-20 20:39 UTC)
+
+Predictions 8–9 remain **inconclusive**. The amended selection chose layer 21 (all layers ≥ 23 were degenerate
+under all-position ablation). Prompt-only ablation on the held-out prompts again broke generation: 297/300 responses
+ran to the length limit as incoherent fragments (49% flagged repetitive), and none contained a refusal or harmful
+content. Read naively, refusal would fall from 99% to 0%, which would "confirm" 8–9; it does not. We do not run a
+third attempt. Both attempts' outputs are kept (`*_attempt1` and the rerun).

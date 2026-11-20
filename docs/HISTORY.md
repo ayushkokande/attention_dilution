@@ -60,16 +60,18 @@ Each prediction was committed to git before its run started. Check the commit ti
 | Commit | Predictions | Outcome |
 |---|---|---|
 | 9006e74 | 1–4: Qwen3-14B keeps in-list refusal under prompt-only ablation; Llama-3.1-8B loses it (100 held-out HarmBench behaviours, seed 2027) | **all held** (Qwen lists 74→82%, alone 81→40%; Llama lists 74→12%) |
-| 513da53 | 5–7: Llama-3.1-70B shows the judge gap (5) and behaves like Llama-3.1-8B under prompt-only ablation (6, 7) | 5 **held** (24-tok 15% vs 74%; ASR 8%); 6–7: see `EXPERIMENTS.md` E15 |
+| 513da53 | 5–7: Llama-3.1-70B shows the judge gap (5) and behaves like Llama-3.1-8B under prompt-only ablation (6, 7) | 5 **held** (24-tok 15% vs 74%; ASR 8%); 6 **failed**; 7 **held** |
 | b49248e | Gemma-2-27B shows the judge gap, ASR ≤ 15% | **held** (24-tok 33% vs 95% target refusal; ASR 1%) |
-| f2f0a7f | 8–9: Gemma-2-27B (refuses mostly up front) loses list refusal under prompt-only ablation | **inconclusive**: the selected layer broke generation (97% repetitive text), so refusal cannot be read. This led to the coherence check in layer selection (b2690fd). |
-| 5d85a48 | 10: Llama-3.1-70B refuses at the item (unlike the 8B), so the locus hypothesis predicts it keeps list refusal under prompt-only ablation; this conflicts with family-based prediction 6 | see `EXPERIMENTS.md` E15 |
+| f2f0a7f | 8–9: Gemma-2-27B (refuses mostly up front) loses list refusal under prompt-only ablation | **inconclusive (twice)**: prompt-only ablation broke generation at layer 41 (97% repetitive) and again at layer 21 after the coherence check was added. A naive reading (99% → 0% refusal) would have falsely confirmed it. |
+| 5d85a48 | 10: Llama-3.1-70B refuses at the item (unlike the 8B), so the locus hypothesis predicts it keeps list refusal under prompt-only ablation; this conflicts with family-based prediction 6 | **10 held, 6 failed, 7 held**: lists 66→72%, alone 83→46% (ASR 16→43%) |
 
 ## Interpretation guardrails (what the paper does *not* claim)
 
 - It does not claim lists are a jailbreak. Adversarial framings drive embedded-prompt attack success (E11).
 - It does not claim the last-token read-out is a "plan". The same-request control shows it reflects the
   request.
+- It does not claim prompt-only ablation works on every model. On Gemma-2-27B it breaks generation, so that
+  test is inconclusive. Always check ablated outputs for coherence (`degenerate()` in `extract_direction.py`).
 - It does not claim L36H31 is necessary for refusal. Zeroing it and three control heads changes nothing.
 - For Qwen3-14B, ablating d̂ removes refusal *phrasing* but rarely produces harmful content (ASR ≤ 7%). The
   mechanism claims are about where refusal is decided, not where harm is permitted.

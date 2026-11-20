@@ -23,7 +23,7 @@ would behave like Qwen3-14B (refusal locus). On the same held-out set, prompt-on
 the request alone from \HoLlamaHugeAloneNoneRef{} to \HoLlamaHugeAlonePromptRef{} (ASR \HoLlamaHugeAloneNoneASR{} to
 \HoLlamaHugeAlonePromptASR{}) but left list refusal intact (\HoLlamaHugeListsNoneRef{} without,
 \HoLlamaHugeListsPromptRef{} with ablation). The family prediction failed and the locus prediction held. A second
-test of the same link, on Gemma-2-27B, which refuses mostly up front, is reported in \cref{app:decisions}.
+test, on Gemma-2-27B, was inconclusive because prompt-only ablation broke its generation (\cref{app:decisions}).
 
 \paragraph{Forced compliant openings deep in a response.} \citet{qi2025shallow} show that forcing a compliant
 opening (``Sure, here is \dots'') defeats most refusals because alignment concentrates on the first output

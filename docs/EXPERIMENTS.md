@@ -18,8 +18,8 @@ on held-out prompts while keeping harmless refusal ≤ 5%:
 | Gemma-2-9B | 22 |
 | Llama-3.1-8B | 10 |
 | Qwen3-32B | 56 |
-| Gemma-2-27B | 41 |
-| Llama-3.1-70B | see `dirs_llama31-70b.pt` |
+| Llama-3.1-70B | 42 |
+| Gemma-2-27B (rerun, coherence check) | 21; first attempt 41, which broke generation |
 
 ## Behaviour and judging
 
@@ -45,7 +45,7 @@ on held-out prompts while keeping harmless refusal ≤ 5%:
 | E7 | Addition at the single decision token | `python causal.py steer1 --model M --n 64` | `judged_steer1_M.jsonl` | `tab_steer1`, `SOne*` |
 | E8 | Zero guardrail head L36H31 vs 3 control heads | `python causal.py head --model qwen3-14b --n 64` | `judged_head_qwen3-14b.jsonl` | `tab_head`, `Head*` |
 | E13 | **Preregistered** held-out replication of E5 (predictions 1–4) | `python causal.py ablate --model M --heldout` (100 HarmBench standard behaviours not in JBB/AdvBench, seed 2027; alone, last of 4, last of 8; none/prompt) | `judged_ablateho_{qwen3-14b,llama31-8b}.jsonl` (600) | `tab_heldout`, `Ho*` (appendix decisions + main text) |
-| E14 | **Preregistered** Gemma-2-27B ablation (predictions 8–9) | `run_27b_mech.sh`: direction, then `causal.py ablate --model gemma2-27b --heldout` | `judged_ablateho_gemma2-27b.jsonl` | `tab_heldout` |
+| E14 | **Preregistered** Gemma-2-27B ablation (predictions 8–9): **inconclusive** (generation broke) | `run_27b_mech.sh`, rerun `run_27b_mech2.sh` | `judged_ablateho_gemma2-27b{_attempt1,}.jsonl` | appendix text, `HoGemmaBigDegenerate` (excluded from `tab_heldout`) |
 | E15 | **Preregistered** Llama-3.1-70B behaviour + ablation (predictions 5–7) | `run_70b.sh` (behaviour, pod 2) and `run_70b_mech.sh` (direction + held-out ablation, pod 1) | `judged_scale_llama31-70b.jsonl`, `judged_ablateho_llama31-70b.jsonl` | `tab_scale`, `tab_heldout`, `Huge*`, `HoLlamaHuge*` |
 
 ## Analysis pipeline
