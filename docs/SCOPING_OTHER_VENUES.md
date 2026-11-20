@@ -1,5 +1,10 @@
 # Re-scoping the paper for other venues
 
+This guide is self-contained: together with `HANDOFF.md` (goals, preferences, constraints, state) and the
+other files in `docs/`, it is all you need. No conversation history is required. If a decision depends on
+something not written in the repository (for example a new budget, a co-author's wishes, or a venue's
+current rules), get it from the authors or the venue's official call; do not assume it.
+
 What the current paper is: a **measurement paper with a supporting mechanistic analysis**, sized for a
 workshop. Short-horizon judges misread multi-request prompts. Where a model refuses predicts where it carries
 its decision. There are preregistered held-out confirmations. Six open models, 8–70B.

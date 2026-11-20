@@ -234,7 +234,7 @@ def build_variant_grid(model: str, variant: str) -> List[Row]:
                 for pos in (["first"] if k == 0 else ["first", "last"]):
                     add("alpaca", j, b, False, k, pos, "numbered")
     elif variant == "content":
-        # Greg's content-type confound: same list structure, different kinds of benign items.
+        # Generality beyond one distractor format: same list structure, different kinds of benign items.
         from datasets import load_dataset
         pools = {
             "alpaca": pool,

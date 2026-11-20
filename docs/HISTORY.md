@@ -11,15 +11,20 @@
 
 Code: `experiment_1..9/`, `Suraj/`. Report: `Attention_Dilution_Submission.pdf`.
 
-Greg's feedback, as we used it:
-- Separate the content-type confound: what the benign items are, not only how many.
-- Check that results are not artefacts of the scoring.
-- Be careful about causal language.
+Instructor feedback (Greg Durrett), as written in `Attention_Dilution_Graded.pdf` (page 1), and how v2
+responds to each point. Re-read the original before claiming the paper "addresses Greg's feedback".
 
-v2 addresses each:
-- content-type experiment (`EXPERIMENTS.md` E12);
-- full-response judging with two judges plus the horizon analysis (E2, E9, E10);
-- causal tests with controls, and preregistration (E5–E8, E13–E15).
+| Feedback (paraphrased; see the PDF for the exact wording) | v2 response | Status |
+|---|---|---|
+| Quantity over quality: for a real paper, one weak analysis undermines the argument | One core claim (judge horizon); mechanism only in support; side results moved to appendices; claims we could not support were retracted (planning, head necessity, v1 collapse) | done |
+| Parts read as LLM-generated: several hypotheses analysed, conclusions asserted with confidence | Preregistered confirmations; controls that overturned our own readings; analysis decisions listed. **The prose must still be rewritten by the authors** | partly (authors) |
+| Show prompt examples; ideally a human study | Prompt examples in the appendix; 120-response human audit prepared | audit pending (authors) |
+| Which analyses were used in prior work? Risk of "rolling your own" | Methods follow published work: difference-of-means direction and ablation (Arditi et al.), HarmBench classifier, StrongREJECT, shallow-alignment prefill (Qi et al.), SequentialBreak-style framings | done |
+| What exactly does "ablating d-hat" mean, and what degradation should we expect? | Defined explicitly as x ← x − (x·d̂)d̂ at every layer; expectations stated as preregistered predictions | done |
+| Related work mostly 2024 or earlier | Related work updated with 2025–2026 papers (refusal dynamics during generation, planning probes, multi-turn and embedded jailbreaks) | done; authors should re-verify citations |
+| Broader, more up-to-date prompts (e.g. JailbreakBench) | JailbreakBench + AdvBench; held-out HarmBench behaviours for confirmation | done |
+| Beyond a single distractor format, model and setup; the "format-specific failure" conclusion was not supported | 3 list templates, 4 adversarial framings, 4 kinds of benign content, 6 models (8–70B), sampling and reasoning mode; the format-specific conclusion was dropped | done |
+| The direction flip is interesting if shown systematically and examined more thoroughly | Measured on all list prompts and models; shown to be real but not a decision (same-request-alone control) | done |
 
 ## v2: what went wrong in v1, and what replaced it
 

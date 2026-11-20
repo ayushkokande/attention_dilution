@@ -5,6 +5,7 @@ an AI assistant in a new session. Nothing below depends on any chat history.
 
 | Document | Read it when you want to... |
 |---|---|
+| [`HANDOFF.md`](HANDOFF.md) | **start here in a new session**: people, stated goals and preferences, constraints, current state, open tasks |
 | [`HISTORY.md`](HISTORY.md) | understand how the project went from the course report (v1) to the current paper, and why |
 | [`EXPERIMENTS.md`](EXPERIMENTS.md) | find any experiment: what it tests, the command, its output file, and where it appears in the paper |
 | [`RUNBOOK.md`](RUNBOOK.md) | rent GPUs, run jobs on RunPod, move files, avoid the problems we hit, and control cost |

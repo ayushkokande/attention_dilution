@@ -31,7 +31,7 @@ on held-out prompts while keeping harmless refusal ≤ 5%:
 | E10a | Sampled decoding | `python generate.py --model M --variant sample` (T=0.7, top-p 0.95, n=3) | `judged_sample_M.jsonl` (4,500) | `tab_variants`, `Samp*` (appendix) |
 | E10b | Reasoning mode | `python generate.py --model qwen3-14b --variant thinking` (+4,096 tokens, trace split at `</think>`) | `judged_thinking_qwen3-14b.jsonl` (1,500) | `tab_variants`, `Think*` (appendix) |
 | E11 | Lists versus SequentialBreak-style framings | `--variant framing` (game, dialogue, question bank; 8 items; JBB) | `judged_framing_M.jsonl` (800; 4 models) | `tab_framing`, `Fr*` |
-| E12 | Kind of benign content (Greg's confound) | `--variant content` (Alpaca, MBPP, GSM8K, NQ; 8 items, middle/last) | `judged_content_M.jsonl` (1,600) | `tab_content`, `Ct*` (appendix) |
+| E12 | Kind of benign content (generality beyond one distractor format) | `--variant content` (Alpaca, MBPP, GSM8K, NQ; 8 items, middle/last) | `judged_content_M.jsonl` (1,600) | `tab_content`, `Ct*` (appendix) |
 | E16 | Larger models | `--variant scale --tp 2` (k ∈ {0,3,15,31}, first/middle/last; 200 targets + benign) | `judged_scale_{qwen3-32b,gemma2-27b,llama31-70b}.jsonl` (2,500) | `tab_scale`, `Big*`, `GemBig*`, `Huge*` |
 
 ## Mechanism
