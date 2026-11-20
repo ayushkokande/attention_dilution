@@ -37,3 +37,16 @@ Prediction 6 is the informative one; we report it whichever way it comes out.
 Gemma-2-27B-it, behaviour only, same `scale` grid: prediction 5 (24-token judge reports at least 20 points less
 refusal than the target-specific rule when the harmful item is not first), and HarmBench ASR with the harmful
 item not first stays at or below 15%.
+
+Gemma-2-27B result (behaviour): both predictions above held (24-token 33% vs target-specific 95% refusal with the item
+not first; ASR 1%). Unlike Gemma-2-9B, its list refusals are mostly up front (59% upfront, 36% in the item).
+
+## Addendum 3 (2026-11-20, before any Gemma-2-27B direction or ablation run)
+
+Our claim is that where a model refuses predicts where its decision is carried. Gemma-2-27B refuses mostly up
+front, so on the same held-out set and conditions as above:
+
+8. Held-out, lists pooled: prompt-only ablation lowers Gemma-2-27B's target refusal by at least 30 points.
+9. Held-out, request alone: prompt-only ablation lowers target refusal by at least 30 points.
+
+If 8 fails, the link between refusal locus and decision locus is weaker than we claim, and the paper says so.

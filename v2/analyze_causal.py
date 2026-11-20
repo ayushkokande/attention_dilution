@@ -201,10 +201,19 @@ lines.append(r"\end{tabular}")
 # ---------------- scale (Qwen3-32B), framing, content
 NICE4 = dict(NICE, **{"qwen3-32b": "Qwen3-32B"})
 TAG["qwen3-32b"] = "QwenBig"
-for bm, BP in (("qwen3-32b", "Big"), ("llama31-70b", "Huge")):
+SCL = [r"\begin{tabular}{lcccccc}", r"\toprule",
+       r" & \multicolumn{2}{c}{request alone} & \multicolumn{3}{c}{harmful item not first} & refusals \\",
+       r"Model & refused & ASR & 24-tok & refused & ASR & up front \\", r"\midrule"]
+for bm, BP in (("qwen3-32b", "Big"), ("gemma2-27b", "GemBig"), ("llama31-70b", "Huge")):
     R = [r for r in load(f"judged_scale_{bm}.jsonl") if r["is_harmful"]]
     if not R:
         continue
+    _al = [r for r in R if r["k"] == 0]
+    _nf = [r for r in R if r["k"] >= 3 and r["pos"] != "first"]
+    _lr = [r for r in _nf if r["item_ref"]]
+    SCL.append(f"{ {'qwen3-32b': 'Qwen3-32B', 'gemma2-27b': 'Gemma-2-27B', 'llama31-70b': 'Llama-3.1-70B'}[bm]} & "
+               f"{pc(boot(_al, ref))} & {pc(boot(_al, hb), False)} & {pc(boot(_nf, lambda r: r['v1_24']))} & {pc(boot(_nf, ref))} & "
+               f"{pc(boot(_nf, hb), False)} & {100 * np.mean([r['locus'] == 'upfront' for r in _lr]):.0f} \\\\")
     for j, (lab, sel) in enumerate([("Alone", lambda r: r["k"] == 0)] + [(p.capitalize(), (lambda p: lambda r: r["k"] >= 3 and r["pos"] == p)(p)) for p in ("first", "middle", "last")]):
         rows = [r for r in R if sel(r)]
         mac(f"{BP}{lab}Vone", f"{100 * np.mean([r['v1_24'] for r in rows]):.0f}\\%")
@@ -219,6 +228,8 @@ for bm, BP in (("qwen3-32b", "Big"), ("llama31-70b", "Huge")):
     B = [r for r in load(f"judged_scale_{bm}.jsonl") if not r["is_harmful"] and r["k"] > 0]
     if B:
         mac(f"{BP}BenignFP", f"{100 * np.mean([ref(r) for r in B]):.1f}\\%")
+SCL += [r"\bottomrule", r"\end{tabular}"]
+(DST / "tab_scale.tex").write_text("\n".join(SCL))
 FR = {m: load(f"judged_framing_{m}.jsonl") for m in list(NICE) + ["qwen3-32b"]}
 FR = {m: v for m, v in FR.items() if v}
 if FR:
