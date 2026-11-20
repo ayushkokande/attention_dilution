@@ -84,8 +84,17 @@ deep inside a response.
 \section{Setup}
 \label{sec:setup}
 
+\paragraph{Threat model and evaluation question.} We take the evaluator's side. A red-teaming or safety
+benchmark submits prompts that bundle one harmful request with benign ones, as embedded-prompt attacks and
+agentic inputs do, and an automatic judge decides from the response whether the model refused. The attacker
+controls only the prompt text (list length, item position, framing); the model is queried in a single turn
+with greedy or sampled decoding and no system prompt. Our question is whether the judge's verdict matches what
+the model did with the harmful item. Mechanistic interventions (\cref{sec:mechanism}) assume white-box access
+and serve to explain the behaviour, not as attacks.
+
 \paragraph{Models.} Qwen3-14B \citep{qwen3} with thinking disabled, Gemma-2-9B-it \citep{gemma2} and
-Llama-3.1-8B-Instruct \citep{llama3}, plus Qwen3-32B and Qwen3-14B in thinking mode for robustness. Generation is
+Llama-3.1-8B-Instruct \citep{llama3}, plus Qwen3-32B, Gemma-2-27B-it, Llama-3.1-70B-Instruct and Qwen3-14B in
+thinking mode for robustness. Generation is
 greedy (vLLM; \citealp{kwon2023vllm}) with a budget of $320(k{+}1){+}256$ new tokens for a list with $k$ benign
 items, capped by the context window. At most 1.2\% of responses per model hit the cap.
 

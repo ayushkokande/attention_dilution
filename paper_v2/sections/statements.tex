@@ -1,0 +1,16 @@
+\section*{Ethics Considerations}
+This work evaluates how existing safety judges score model responses; it introduces no new attack. The
+multi-request prompts we use are plain lists built from public benchmark behaviours (JailbreakBench, AdvBench,
+HarmBench), and the adversarial framings follow a published attack \citep{saiem2024sequentialbreak}. Some
+generated responses contain harmful content. We do not release response text publicly: the public artifact
+contains prompt identifiers, judge labels, probe values and code, and full responses are shared with
+researchers on request. No human subjects were involved; the planned human audit (\cref{app:judge}) will be
+done by the authors. Our mechanistic interventions use published techniques on open-weight models and give no
+new capability for removing safeguards.
+
+\section*{Acknowledgements and Use of Generative AI}
+% AUTHORS: edit this to match what you actually did before submitting (NDSS 2027 policy: name the sections and
+% the tools/versions used when entire sections, tables or figures were AI-generated).
+An AI assistant (Claude Opus 5.5, Anthropic) was used to write and run experiment and analysis code, to generate
+tables and figures from the logged results, and to draft text in all sections. The authors designed the study,
+reviewed every result against the logged data, rewrote the text, and take responsibility for the content.

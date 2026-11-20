@@ -1,0 +1,59 @@
+% STALA 2027 @ NDSS submission version (NDSS 2027 template: IEEEtran conference, two columns, US letter).
+% Double-blind: no author names. The ICLR-style preprint version is main.tex; both share sections/ and generated/.
+\documentclass[conference,letterpaper]{IEEEtran}
+\pagestyle{plain}
+\usepackage{times}
+\usepackage[numbers,sort&compress]{natbib}
+\input{math_commands.tex}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+\graphicspath{{figures/}}
+\newcommand{\dhat}{\hat{d}}
+\newcommand{\codenote}{its code is included in the anonymized artifact}
+\newcommand{\ci}[2]{\,{\scriptsize[#1,\,#2]}}
+% Two-column layout: every table and figure spans both columns.
+\renewenvironment{table}[1][t]{\begin{table*}[t]}{\end{table*}}
+\renewenvironment{figure}[1][t]{\begin{figure*}[t]}{\end{figure*}}
+\input{generated/macros}
+\input{generated/macros_causal}
+\input{generated/fallback}
+\hyphenation{Gemma Llama Qwen}
+
+\begin{document}
+\title{Deferred Refusal: Short-Horizon Judges Misread\\ Safety in Multi-Request Prompts}
+\author{\IEEEauthorblockN{Anonymous submission}}
+
+\IEEEoverridecommandlockouts
+\makeatletter\def\@IEEEpubidpullup{6.5\baselineskip}\makeatother
+\IEEEpubid{\parbox{\columnwidth}{
+    Workshop on Security Testing and Assurance for LLMs and Agents (STALA) 2027\\
+    22 March 2027, Seoul, Republic of Korea\\
+    ISBN 978-1-970672-09-1\\
+    https://dx.doi.org/10.14722/stala.2027.23xxxx\\
+    www.ndss-symposium.org
+}
+\hspace{\columnsep}\makebox[\columnwidth]{}}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/body}
+
+\input{sections/statements}
+
+\bibliographystyle{IEEEtranN}
+\bibliography{refs}
+
+\appendices
+\input{sections/appendix}
+
+\end{document}

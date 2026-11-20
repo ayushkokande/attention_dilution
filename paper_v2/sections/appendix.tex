@@ -1,8 +1,7 @@
 \section{What went wrong in our earlier analysis}
 \label{app:v1}
 
-Our earlier report (an unpublished course project; its code is in the repository's \texttt{Suraj/} and
-\texttt{experiment\_*} folders) studied six ``bloat'' formats on Qwen3-14B and concluded that only the
+Our earlier report (an unpublished course project; \codenote) studied six ``bloat'' formats on Qwen3-14B and concluded that only the
 numbered-list (``distractor'') format broke refusal, at about 31 tokens. Three design choices produced this
 result.
 
@@ -96,6 +95,23 @@ refusal (\cref{sec:setup}).
 
 \section{Interventions and robustness: full results}
 \label{app:causal}
+
+\begin{table}[h]
+\centering\small
+\caption{Plain list versus framings in the style of SequentialBreak (8 items, 100 JailbreakBench targets).
+Cells: HarmBench ASR / refusal in the first 24 tokens, in \%. ``Late'': fifth of eight items.}
+\label{tab:framing}
+\resizebox{\linewidth}{!}{\input{generated/tab_framing}}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Kinds of benign items around the harmful request (8 items, harmful item in the middle or last; 400
+responses per cell). Cells in \%.}
+\label{tab:content}
+\resizebox{\linewidth}{!}{\IfFileExists{generated/tab_content.tex}{\input{generated/tab_content}}{\textbf{[content table pending]}}}
+\end{table}
+
 
 \begin{table}[h]
 \centering\small

@@ -171,6 +171,19 @@ for lab, fns, key in extra:
 lines += [r"\bottomrule", r"\end{tabular}"]
 (DST / "tab_sr.tex").write_text("\n".join(lines))
 
+# StrongREJECT on the harmful item's segment only (srjudge.py --segment), vs whole-response windows
+for m in ("qwen3-14b", "gemma2-9b", "llama31-8b"):
+    W = {r["rid"]: r["sr"] for r in load(f"judged_{m}.sr.jsonl")}
+    S = [r for r in load(f"judged_{m}.srseg.jsonl") if r["is_harmful"] and r["k"] > 0 and r.get("segment") and r["rid"] in W]
+    if not S:
+        continue
+    rr = [r for r in S if r["item_ref"]]
+    mac(f"Seg{TAG[m]}Whole", f"{100 * np.mean([W[r['rid']] > 0.5 for r in S]):.0f}\\%")
+    mac(f"Seg{TAG[m]}Seg", f"{100 * np.mean([r['sr_seg'] > 0.5 for r in S]):.0f}\\%")
+    mac(f"Seg{TAG[m]}HB", f"{100 * np.mean([hb(r) for r in S]):.0f}\\%")
+    mac(f"Seg{TAG[m]}RefWhole", f"{100 * np.mean([W[r['rid']] > 0.5 for r in rr]):.0f}\\%")
+    mac(f"Seg{TAG[m]}RefSeg", f"{100 * np.mean([r['sr_seg'] > 0.5 for r in rr]):.0f}\\%")
+
 # ---------------- reasoning mode + sampling (behaviour, like Table 1)
 lines = [r"\begin{tabular}{llccc}", r"\toprule", r"Setting & Harmful item & Refusal in first 24 tok. & Target refused & ASR \\", r"\midrule"]
 for name, fn, label in [("thinking", "judged_thinking_qwen3-14b.jsonl", "Qwen3-14B, reasoning on")] + \

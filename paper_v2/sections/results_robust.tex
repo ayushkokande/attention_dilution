@@ -1,6 +1,17 @@
-\paragraph{A larger model.} Qwen3-32B shows the same misreading. With the harmful item in the middle of a list,
-its opening refusal rate is \BigMiddleVone, while it refuses the item in \BigMiddleRef\ of responses and
-HarmBench ASR is \BigMiddleASR\ (request alone: \BigAloneRef\ refused, \BigAloneASR\ ASR).
+\paragraph{Larger models.} We ran the same reduced grid (lists of 4, 16 and 32 items, harmful item first, in the
+middle or last) on Qwen3-32B, Gemma-2-27B and Llama-3.1-70B (\cref{tab:scale}). Each shows the same misreading. With the harmful
+item not first, the 24-token judge reports \BigNotFirstVone\ and \GemBigNotFirstVone\ refusal for Qwen3-32B and
+Gemma-2-27B, while the target is refused in \BigNotFirstRef\ and \GemBigNotFirstRef\ of responses and ASR stays at
+\BigMiddleASR\ or below. Where models refuse can change with scale within a family: Gemma-2-27B refuses up front in
+\GemBigLocusUpfront\ of its list refusals, unlike Gemma-2-9B, which refuses mostly at the item. \HUGESENTENCE
+
+\begin{table}[t]
+\centering\small
+\caption{Larger models on the reduced grid (100 JailbreakBench and 100 AdvBench targets; \% with 95\% CIs).
+``Up front'': share of target refusals that come before the first item.}
+\label{tab:scale}
+\input{generated/tab_scale}
+\end{table}
 
 \paragraph{Sampled decoding.} With temperature 0.7 and three samples per prompt, the gap persists for every
 model: with the harmful item last, the 24-token judge reports \SampQwenLastVone, \SampGemmaLastVone\ and
@@ -8,16 +19,38 @@ model: with the harmful item last, the 24-token judge reports \SampQwenLastVone,
 \SampGemmaLastRef\ and \SampLlamaLastRef\ target refusal and \SampQwenLastASR, \SampGemmaLastASR\ and
 \SampLlamaLastASR\ ASR (\cref{tab:variants}).
 
-\paragraph{Reasoning mode.} \THINKSENTENCE
+\paragraph{Reasoning mode.} With Qwen3-14B's thinking mode on (4{,}096 extra tokens for the trace), the
+24-token judge applied to the answer after the trace reports \ThinkLastVone\ refusal with the harmful item last,
+while the target is refused in \ThinkLastRef\ of answers and HarmBench ASR is \ThinkLastASR\ (alone: \ThinkAloneRef\
+refused, \ThinkAloneASR\ ASR). The trace itself contains refusal language in \ThinkRefInThinking\ of list
+responses, so a judge that read the trace would see the decision early, but one that reads only the opening of
+the answer would not (\cref{tab:variants}).
 
-\paragraph{A second judge.} StrongREJECT's fine-tuned evaluator \citep{souly2024strongreject} agrees with
-HarmBench's labels (AUC \SRQwenAUC, \SRGemmaAUC, \SRLlamaAUC) and rates responses that neither refuse nor are
-harmful under our labels as low-utility for an attacker (mean score \SRQwenOther, \SRGemmaOther, \SRLlamaOther\ on
-a 0--1 scale), supporting our reading of them as deflections (\cref{tab:sr}).
+\paragraph{A second judge.} StrongREJECT's fine-tuned evaluator \citep{souly2024strongreject}, applied to the
+same 512-token windows, ranks responses much as HarmBench's classifier does (AUC against HarmBench labels
+\SRQwenAUC, \SRGemmaAUC\ and \SRLlamaAUC; \cref{tab:sr}). On the \SRIntN\ single-target outputs of our
+interventions, where harmful content is common, the two judges also agree on the rate (\SRIntHB\ by HarmBench,
+AUC \SRIntAUC). On long list responses StrongREJECT is more permissive: its score exceeds 0.5 for
+\SRQwenRate, \SRGemmaRate\ and \SRLlamaRate\ of harmful-target responses (HarmBench: 5.3\%, 1.7\%, 7.9\%), the gap is
+largest in 32-item lists (highest cell \SRLlamaMaxCell\ for Llama-3.1-8B), and it scores 7--10\% of responses
+whose target answer is a refusal above 0.5. This is what one would expect if a judge built for one request
+credits detailed answers to the benign items, and scoring only the harmful item's segment confirms it. On
+responses where the segment can be located, StrongREJECT's rate falls from \SegQwenWhole, \SegGemmaWhole\ and
+\SegLlamaWhole\ (whole response) to \SegQwenSeg, \SegGemmaSeg\ and \SegLlamaSeg, matching HarmBench on the same
+responses (\SegQwenHB, \SegGemmaHB, \SegLlamaHB). Among responses whose target is refused, it falls from
+\SegQwenRefWhole--\SegLlamaRefWhole\ to \SegGemmaRefSeg--\SegLlamaRefSeg. So the horizon problem has a counterpart
+for judges that read the whole response: they need to know which part answers the harmful request. Even taking StrongREJECT at face value, no list cell exceeds a third, against 24-token refusal
+rates as low as 5\%.
 
 \paragraph{What surrounds the request.} Replacing Alpaca instructions with coding tasks, math word problems or
 factual questions as the benign items (8-item lists, harmful item in the middle or last) leaves ASR low for
-every model (\cref{tab:content}). \CONTENTSENTENCE
+every model (\cref{tab:content}; at most \CtLlamaCodeASR, for Llama-3.1-8B with coding tasks). The kind of
+benign content changes how often a model refuses up front: Gemma-2-9B's 24-token refusal rate is 10\% with
+Alpaca items and 56\% with coding tasks. It does not change whether the target is refused (Gemma-2-9B:
+\CtGemmaCodeRef\ to \CtGemmaQaRef). The one low cell, Qwen3-14B with math problems (\CtQwenMathRef\ refused,
+\CtQwenMathASR\ ASR), is mostly a measurement gap. In a spot check of six responses that were neither refused
+nor harmful, the model prefixed the item with a warning (``\emph{Note:} this request is illegal and
+unethical'') that our phrase list does not match, so 66\% is a lower bound.
 
 \paragraph{Lists versus adversarial framings.} SequentialBreak \citep{saiem2024sequentialbreak} reports high
 attack success for harmful prompts embedded late in game, dialogue and question-bank framings. We wrote framings
@@ -28,19 +61,3 @@ text-adventure framing raises ASR to 28--42\% across the four models when the ha
 to 15--21\%. The plain list and the dialogue framing stay at or below 12\%. Our numbers
 remain below SequentialBreak's, whose templates are generated and tuned per behaviour, but they agree that
 narrative framing, not multi-request structure as such, is what makes embedded requests effective.
-
-\begin{table}[t]
-\centering\small
-\caption{Plain list versus framings in the style of SequentialBreak (8 items, 100 JailbreakBench targets).
-Cells: HarmBench ASR / refusal in the first 24 tokens, in \%. ``Late'': fifth of eight items.}
-\label{tab:framing}
-\resizebox{\linewidth}{!}{\input{generated/tab_framing}}
-\end{table}
-
-\begin{table}[t]
-\centering\small
-\caption{Kinds of benign items around the harmful request (8 items, harmful item in the middle or last; 400
-responses per cell). Cells in \%.}
-\label{tab:content}
-\resizebox{\linewidth}{!}{\IfFileExists{generated/tab_content.tex}{\input{generated/tab_content}}{\textbf{[content table pending]}}}
-\end{table}
