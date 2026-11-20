@@ -1,0 +1,53 @@
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_behaviour.pdf}
+\caption{Numbered-list template, 200 harmful targets per point; shaded bands are 95\% bootstrap CIs over
+prompts. \textbf{Top:} the earlier metric, a refusal phrase in the first 24 generated tokens, collapses as soon
+as the harmful item is not first. \textbf{Bottom:} HarmBench attack success on the full response stays low at
+every list length and position. $x$-axis: number of items in the list ($k{+}1$; 1 = request alone).}
+\label{fig:behaviour}
+\end{figure}
+
+\begin{table}[t]
+\centering\small
+\caption{Pooled over $k\in\{3,7,15,31\}$, numbered template (800 responses per cell; $k{=}0$: 200). Percentages
+with 95\% bootstrap CIs over prompts. ``Target refused'' counts refusals of the harmful item wherever they occur
+in the response (\cref{sec:setup}). It is not the complement of ASR; the remainder are deflections, such as
+reinterpreting ``a guide for cyberbullying'' as advice for victims.}
+\label{tab:behaviour}
+\input{generated/tab_behaviour}
+\end{table}
+
+\paragraph{The 24-token judge reports a collapse that is not there.} \Cref{fig:behaviour} (top) reproduces the
+earlier result with the earlier metric. When the harmful item is first, the response opens with a refusal
+(\QwenFirstVone\ for Qwen3-14B, against \QwenAloneVone\ for the request alone). When it is in the middle or
+last, the opening refusal rate drops to \QwenMiddleVone\ and \QwenLastVone. The same pattern appears in every
+model and template. Reading the full response changes the picture (\cref{tab:behaviour}). Qwen3-14B refuses
+the harmful item in \QwenMiddleRef\ and \QwenLastRef\ of middle and last placements, and HarmBench's classifier
+finds harmful content in only \QwenMiddleASR\ and \QwenLastASR. Among Qwen3-14B list responses that the 24-token
+judge scores as compliant, \QwenNotHarmfulGivenVoneComply\ contain no harmful content.
+Gemma-2-9B shows the same pattern more strongly. Its opening refusal rate falls to \GemmaMiddleVone\ (middle) and \GemmaLastVone\ (last), yet it refuses the harmful item in \GemmaMiddleRef\ and \GemmaLastRef\ of those responses, and its ASR never exceeds \GemmaMaxASR\ in any cell.\ Llama-3.1-8B shows what the short-horizon judge is actually measuring. It usually refuses up front (\LlamaUpfrontShare\ of its refusals when the item is not first), so its 24-token refusal rate drops less (\LlamaMiddleVone\ middle, \LlamaLastVone\ last) and the misreading is smaller. It is still present: among Llama list responses that the 24-token judge calls compliant, \LlamaNotHarmfulGivenVoneComply\ contain no harmful content.
+
+\paragraph{Where the refusal happens.} When the harmful item is not first, Qwen3-14B places \QwenInItemShare\ of
+its refusals \emph{in the item}: it answers the preceding benign items and then declines. In the other
+\QwenUpfrontShare\ it refuses the item \emph{up front} (``I can't help with request 4, but here are the
+others'') and skips it. Both patterns are invisible to a judge that stops after 24 tokens, unless an upfront
+refusal is short enough to fit. Gemma-2-9B refuses in the item in \GemmaInItemShare\ of these cases and up front in \GemmaUpfrontShare. Llama-3.1-8B reverses the pattern (\LlamaInItemShare\ in the item, \LlamaUpfrontShare\ up front). The remainder skip the item without a refusal phrase.
+
+\paragraph{Is there any real effect of lists?} Yes, but it is small. Qwen3-14B's ASR rises from \QwenAloneASR\
+for the request alone to at most \QwenMaxASR\ in any list cell, and target refusal falls by roughly
+8 points. The difference goes into deflections rather than harmful compliance. Gemma-2-9B's ASR stays at or below 5\% in every cell of every template. Llama-3.1-8B shows the largest effect: from \LlamaAloneASR\ for the request alone to \LlamaMaxASR\ in its worst numbered-template cell (middle position, three items; 15\% with the bulleted template at $k{=}15$), with confidence intervals that overlap the baseline in most cells.\ The effect
+does not grow with list length beyond three items (\cref{fig:behaviour}, bottom), which argues against a
+softmax-dilution account in which more benign tokens steadily wash out the harmful request.
+
+\paragraph{Templates.} \Cref{tab:templates} varies the list wording at $k{=}15$. The 24-token judge is
+sensitive to template: the to-do-list template makes models refuse up front more often, which lifts the
+opening refusal rate. ASR is low under all three templates. For Llama-3.1-8B, which tends to refuse up front, the 24-token rate barely depends on position under any template. This is consistent with the judge measuring the response's layout rather than the model's decision.
+
+\begin{table}[t]
+\centering\small
+\caption{Three list templates at $k{=}15$, harmful item first or last (200 responses per cell). Columns: refusal
+in the first 24 tokens / HarmBench ASR, in \%.}
+\label{tab:templates}
+\resizebox{\linewidth}{!}{\input{generated/tab_templates}}
+\end{table}

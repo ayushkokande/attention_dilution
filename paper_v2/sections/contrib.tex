@@ -1,0 +1,11 @@
+(1)~A controlled re-measurement of list-embedded harmful requests on three model families, 200 targets, six list
+lengths, three positions and three templates (about 18{,}000 full-length responses). It shows that 24-token
+refusal scoring reports a near-total collapse of refusal that the full responses do not support. (2)~A
+characterization of \emph{where} models refuse in lists: Qwen3-14B and Gemma-2-9B mostly refuse inside the item,
+Llama-3.1-8B mostly up front. The true increase in harmful compliance from list embedding is a few points of
+ASR. (3)~Probing evidence that the refusal-direction read-out at the last prompt token still ranks list
+responses by their eventual outcome, while its sign and scale no longer predict the next tokens. The
+``sign flip'' and ``guardrail head silencing'' of our earlier analysis are effects of where we measured. (4)~A
+causal check: adding the unnormalized refusal direction at the item's decision point raises refusal of the
+harmful item. (5)~Concrete recommendations for evaluating multi-request prompts, and the code and data to apply
+them.

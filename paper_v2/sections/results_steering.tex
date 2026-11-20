@@ -1,0 +1,37 @@
+If the model's handling of the harmful item is re-read when it reaches the item, adding the refusal direction at
+that point should change the outcome. We test this with \emph{item-time steering}. For list prompts with
+$k{=}15$ and the harmful item in the middle or last position, we teacher-force the model's own greedy response
+up to the harmful item's answer onset. We then generate 160 tokens while adding $\alpha\,v_\ell$ to the output of
+the selected layer, where $v_\ell=\mu^{\text{harm}}_\ell-\mu^{\text{harmless}}_\ell$ is the \emph{unnormalized}
+difference of means, so that $\alpha{=}1$ adds one ``harmful-minus-harmless'' unit. Our earlier study added at
+most 2.6\% of this vector, which made its negative result uninformative (\cref{app:v1}). We add the vector either
+from the decision point onward or at every position, including the prompt. Of the 64 harmful cases per model we include every case where
+the unsteered model complied (\QwenSteerNComply, \GemmaSteerNComply\ and \LlamaSteerNComply\ for Qwen, Gemma and
+Llama) and fill the rest with refused cases. As an over-refusal check, the same
+intervention is applied at the onset of a \emph{benign} target in the same list structure (32 per model).
+
+\begin{table}[t]
+\centering\small
+\caption{Item-time steering at $k{=}15$. Harmful targets: HarmBench ASR / target refused (\%), scored on the
+160-token continuation. Benign targets: refused (\%). $\alpha$ is in units of the unnormalized
+difference-of-means vector at the selected layer.}
+\label{tab:steer}
+\resizebox{\linewidth}{!}{\input{generated/tab_steer}}
+\end{table}
+
+\paragraph{The direction is causally effective at the item, within a narrow window.} For Qwen3-14B, adding one
+unit of the direction from the decision point onward lowers ASR on the harmful continuation from 28\% to 6\% and
+raises refusal from 61\% to 86\%, with no refusals of benign targets (\cref{tab:steer}). Smaller doses have
+little effect. For Llama-3.1-8B, half a unit already lowers ASR from 34\% to 8\% at a cost of 3\% benign
+refusals; a full unit removes harmful continuations but refuses half of the benign targets. Gemma-2-9B rarely
+complies even without steering (5\% ASR), and a quarter unit removes the remaining harmful continuations without
+benign refusals; larger doses refuse benign targets too. Adding the vector at every position, including the
+prompt, is not consistently better than adding it at the decision point: it helps Llama-3.1-8B at half a unit but
+refuses more benign targets, and it does not help Qwen3-14B.
+
+These results reverse our earlier conclusion that single-direction steering cannot rescue refusal in lists.
+That test added at most 2.6\% of the vector, an order of magnitude below the doses that work here. The usable
+range differs by model and is narrow: the dose that removes harmful continuations is close to the dose that
+starts refusing benign requests. With 64 harmful and 32 benign cases per model, these estimates are coarse,
+and we read them as evidence that the direction is causally relevant at the item, not as a deployable
+defence.

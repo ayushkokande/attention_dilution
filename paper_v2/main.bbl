@@ -1,0 +1,170 @@
+\begin{thebibliography}{22}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Anil et~al.(2024)Anil, Durmus, Sharma, Benton, Kundu, Batson, Rimsky,
+  Tong, Mu, Ford, et~al.]{anil2024manyshot}
+Cem Anil, Esin Durmus, Mrinank Sharma, Joe Benton, Sandipan Kundu, Joshua
+  Batson, Nina Rimsky, Meg Tong, Jesse Mu, Daniel Ford, et~al.
+\newblock Many-shot jailbreaking.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem[Arditi et~al.(2024)Arditi, Obeso, Syed, Paleka, Panickssery, Gurnee,
+  and Nanda]{arditi2024refusal}
+Andy Arditi, Oscar Obeso, Aaquib Syed, Daniel Paleka, Nina Panickssery, Wes
+  Gurnee, and Neel Nanda.
+\newblock Refusal in language models is mediated by a single direction.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+\newblock arXiv:2406.11717.
+
+\bibitem[Chao et~al.(2024)Chao, Debenedetti, Robey, Andriushchenko, Croce,
+  Sehwag, Dobriban, Flammarion, Pappas, Tram{\`e}r, Hassani, and
+  Wong]{chao2024jailbreakbench}
+Patrick Chao, Edoardo Debenedetti, Alexander Robey, Maksym Andriushchenko,
+  Francesco Croce, Vikash Sehwag, Edgar Dobriban, Nicolas Flammarion, George~J.
+  Pappas, Florian Tram{\`e}r, Hamed Hassani, and Eric Wong.
+\newblock {JailbreakBench}: An open robustness benchmark for jailbreaking large
+  language models.
+\newblock In \emph{Advances in Neural Information Processing Systems, Datasets
+  and Benchmarks Track}, 2024.
+
+\bibitem[{Gemma Team}(2024)]{gemma2}
+{Gemma Team}.
+\newblock Gemma 2: Improving open language models at a practical size.
+\newblock \emph{arXiv preprint arXiv:2408.00118}, 2024.
+
+\bibitem[Hadeliya et~al.(2025)Hadeliya, Jauhar, Sakpal, and
+  Cruz]{hadeliya2025refusals}
+Tsimur Hadeliya, Mohammad~Ali Jauhar, Nidhi Sakpal, and Diogo Cruz.
+\newblock When refusals fail: Unstable safety mechanisms in long-context {LLM}
+  agents.
+\newblock \emph{arXiv preprint arXiv:2512.02445}, 2025.
+
+\bibitem[He et~al.(2026)He, Wang, Chu, Xu, Zhang, Wang, and
+  Zheng]{he2026jailbreakscope}
+Zeqing He, Zhibo Wang, Zhixuan Chu, Huiyu Xu, Wenhui Zhang, Qinglong Wang, and
+  Rui Zheng.
+\newblock {JailbreakScope}: Interpreting jailbreak mechanism through
+  representation and circuit analyses.
+\newblock In \emph{USENIX Security Symposium}, 2026.
+
+\bibitem[Kwon et~al.(2023)Kwon, Li, Zhuang, Sheng, Zheng, Yu, Gonzalez, Zhang,
+  and Stoica]{kwon2023vllm}
+Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody~Hao Yu,
+  Joseph~E. Gonzalez, Hao Zhang, and Ion Stoica.
+\newblock Efficient memory management for large language model serving with
+  {PagedAttention}.
+\newblock In \emph{Proceedings of the ACM Symposium on Operating Systems
+  Principles}, 2023.
+
+\bibitem[{Llama Team, AI @ Meta}(2024)]{llama3}
+{Llama Team, AI @ Meta}.
+\newblock The {Llama 3} herd of models.
+\newblock \emph{arXiv preprint arXiv:2407.21783}, 2024.
+
+\bibitem[Lu et~al.(2025)Lu, Cheng, Zhang, Cui, Wang, Gu, Dong, Tang, Wang, and
+  Huang]{lu2025longsafety}
+Yida Lu, Jiale Cheng, Zhexin Zhang, Shiyao Cui, Cunxiang Wang, Xiaotao Gu,
+  Yuxiao Dong, Jie Tang, Hongning Wang, and Minlie Huang.
+\newblock {LongSafety}: Evaluating long-context safety of large language
+  models.
+\newblock In \emph{Proceedings of the Annual Meeting of the Association for
+  Computational Linguistics}, 2025.
+\newblock arXiv:2502.16971.
+
+\bibitem[Mazeika et~al.(2024)Mazeika, Phan, Yin, Zou, Wang, Mu, Sakhaee, Li,
+  Basart, Li, Forsyth, and Hendrycks]{mazeika2024harmbench}
+Mantas Mazeika, Long Phan, Xuwang Yin, Andy Zou, Zifan Wang, Norman Mu, Elham
+  Sakhaee, Nathaniel Li, Steven Basart, Bo~Li, David Forsyth, and Dan
+  Hendrycks.
+\newblock {HarmBench}: A standardized evaluation framework for automated red
+  teaming and robust refusal.
+\newblock In \emph{International Conference on Machine Learning}, 2024.
+
+\bibitem[{Palo Alto Networks Unit 42}(2024)]{unit42deceptive}
+{Palo Alto Networks Unit 42}.
+\newblock Deceptive delight: Jailbreak {LLMs} through camouflage and
+  distraction.
+\newblock
+  \url{https://unit42.paloaltonetworks.com/jailbreak-llms-through-camouflage-distraction/},
+  2024.
+
+\bibitem[Qi et~al.(2025)Qi, Panda, Lyu, Ma, Roy, Beirami, Mittal, and
+  Henderson]{qi2025shallow}
+Xiangyu Qi, Ashwinee Panda, Kaifeng Lyu, Xiao Ma, Subhrajit Roy, Ahmad Beirami,
+  Prateek Mittal, and Peter Henderson.
+\newblock Safety alignment should be made more than just a few tokens deep.
+\newblock In \emph{International Conference on Learning Representations}, 2025.
+\newblock arXiv:2406.05946.
+
+\bibitem[{Qwen Team}(2025)]{qwen3}
+{Qwen Team}.
+\newblock {Qwen3} technical report.
+\newblock \emph{arXiv preprint arXiv:2505.09388}, 2025.
+
+\bibitem[Saiem et~al.(2024)Saiem, Shanto, Ahsan, and
+  Rashid]{saiem2024sequentialbreak}
+Bijoy~Ahmed Saiem, MD~Sadik~Hossain Shanto, Rakib Ahsan, and Md~Rafi~ur Rashid.
+\newblock {SequentialBreak}: Large language models can be fooled by embedding
+  jailbreak prompts into sequential prompt chains.
+\newblock \emph{arXiv preprint arXiv:2411.06426}, 2024.
+
+\bibitem[Souly et~al.(2024)Souly, Lu, Bowen, Trinh, Hsieh, Pandey, Abbeel,
+  Svegliato, Emmons, Watkins, and Toyer]{souly2024strongreject}
+Alexandra Souly, Qingyuan Lu, Dillon Bowen, Tu~Trinh, Elvis Hsieh, Sana Pandey,
+  Pieter Abbeel, Justin Svegliato, Scott Emmons, Olivia Watkins, and Sam Toyer.
+\newblock A {StrongREJECT} for empty jailbreaks.
+\newblock In \emph{Advances in Neural Information Processing Systems, Datasets
+  and Benchmarks Track}, 2024.
+\newblock arXiv:2402.10260.
+
+\bibitem[Srivastava \& Panda(2026)Srivastava and Panda]{srivastava2026ara}
+Aviral Srivastava and Sourav Panda.
+\newblock Attention is where you attack.
+\newblock \emph{arXiv preprint arXiv:2605.00236}, 2026.
+
+\bibitem[Taori et~al.(2023)Taori, Gulrajani, Zhang, Dubois, Li, Guestrin,
+  Liang, and Hashimoto]{taori2023alpaca}
+Rohan Taori, Ishaan Gulrajani, Tianyi Zhang, Yann Dubois, Xuechen Li, Carlos
+  Guestrin, Percy Liang, and Tatsunori~B. Hashimoto.
+\newblock Stanford alpaca: An instruction-following {LLaMA} model.
+\newblock \url{https://github.com/tatsu-lab/stanford_alpaca}, 2023.
+
+\bibitem[Wollschl{\"a}ger et~al.(2025)Wollschl{\"a}ger, Elstner, Geisler,
+  Cohen-Addad, G{\"u}nnemann, and Gasteiger]{wollschlaeger2025geometry}
+Tom Wollschl{\"a}ger, Jannes Elstner, Simon Geisler, Vincent Cohen-Addad,
+  Stephan G{\"u}nnemann, and Johannes Gasteiger.
+\newblock The geometry of refusal in large language models: Concept cones and
+  representational independence.
+\newblock In \emph{International Conference on Machine Learning}, 2025.
+\newblock arXiv:2502.17420.
+
+\bibitem[Xiao et~al.(2024)Xiao, Yang, Chen, and Chen]{xiao2024dap}
+Zeguan Xiao, Yan Yang, Guanhua Chen, and Yun Chen.
+\newblock Distract large language models for automatic jailbreak attack.
+\newblock In \emph{Proceedings of the Conference on Empirical Methods in
+  Natural Language Processing}, 2024.
+
+\bibitem[Zhao et~al.(2025)Zhao, Huang, Wu, Bau, and Shi]{zhao2025separately}
+Jiachen Zhao, Jing Huang, Zhengxuan Wu, David Bau, and Weiyan Shi.
+\newblock {LLMs} encode harmfulness and refusal separately.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2025.
+\newblock arXiv:2507.11878.
+
+\bibitem[Zhu et~al.(2024)Zhu, Amos, Tian, Guo, and Evtimov]{zhu2024advprefix}
+Sicheng Zhu, Brandon Amos, Yuandong Tian, Chuan Guo, and Ivan Evtimov.
+\newblock {AdvPrefix}: An objective for nuanced {LLM} jailbreaks.
+\newblock \emph{arXiv preprint arXiv:2412.10321}, 2024.
+
+\bibitem[Zou et~al.(2023)Zou, Wang, Carlini, Nasr, Kolter, and
+  Fredrikson]{zou2023advbench}
+Andy Zou, Zifan Wang, Nicholas Carlini, Milad Nasr, J.~Zico Kolter, and Matt
+  Fredrikson.
+\newblock Universal and transferable adversarial attacks on aligned language
+  models.
+\newblock \emph{arXiv preprint arXiv:2307.15043}, 2023.
+
+\end{thebibliography}

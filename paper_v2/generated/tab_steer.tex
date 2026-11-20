@@ -1,0 +1,14 @@
+\begin{tabular}{llcccccc}
+\toprule
+Where added & $\alpha$ & \multicolumn{2}{c}{Qwen3-14B} & \multicolumn{2}{c}{Gemma-2-9B} & \multicolumn{2}{c}{Llama-3.1-8B} \\
+ & & harm.: ASR / ref. & benign: ref. & harm.: ASR / ref. & benign: ref. & harm.: ASR / ref. & benign: ref. \\
+\midrule
+no steering & 0 & 28 / 61 & 0 & 5 / 95 & 0 & 34 / 53 & 0 \\
+decision point onward & 0.25 & 31 / 64 & 0 & 0 / 100 & 0 & 28 / 67 & 0 \\
+ & 0.5 & 28 / 66 & 0 & 0 / 100 & 25 & 8 / 83 & 3 \\
+ & 1 & 6 / 86 & 0 & 0 / 100 & 100 & 0 / 95 & 53 \\
+every position & 0.25 & 28 / 66 & 0 & 0 / 100 & 3 & 16 / 78 & 0 \\
+ & 0.5 & 30 / 67 & 0 & 0 / 100 & 75 & 3 / 94 & 6 \\
+ & 1 & 9 / 83 & 6 & 0 / 100 & 100 & 11 / 70 & 22 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,22 @@
+\begin{tabular}{lccc}
+\toprule
+Projection (\% of harmful-alone value) & Qwen3-14B & Gemma-2-9B & Llama-3.1-8B \\
+\midrule
+last prompt token, harmful request alone & +100 & +100 & +100 \\
+last prompt token, benign request alone & -30 & +4 & -6 \\
+\midrule
+last prompt token, harmful item first & +30 & +60 & +15 \\
+last prompt token, harmful item last & +11 & +40 & +20 \\
+\midrule
+harmful item's answer onset, item refused & +4 & +56 & +27 \\
+harmful item's answer onset, item complied & -18 & +35 & +29 \\
+benign item's answer onset & -25 & +10 & +6 \\
+\midrule
+AUC refused vs.\ complied, answer onset (sel.\ / best layer) & 0.88 / 0.91 (27) & 0.86 / 0.90 (26) & 0.46 / 0.83 (16) \\
+AUC refused vs.\ complied, last prompt token (sel.\ / best) & 0.95 / 0.95 (24) & 0.92 / 0.97 (38) & 0.69 / 0.91 (25) \\
+\midrule
+lists with negative last-token projection & 16\% & 0\% & 3\% \\
+\quad ASR / target refused, if negative & 23\% / 46\% & -- & 23\% / 55\% \\
+\quad ASR / target refused, if positive & 1\% / 95\% & 1\% / 97\% & 6\% / 86\% \\
+\bottomrule
+\end{tabular}

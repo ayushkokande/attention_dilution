@@ -1,0 +1,20 @@
+\begin{tabular}{llccc}
+\toprule
+Model & Harmful item & Refusal in first 24 tok. & Target refused & HarmBench ASR \\
+\midrule
+Qwen3-14B & alone ($k{=}0$) & 84\ci{80}{90} & 89\ci{85}{93} & 2\ci{0}{5} \\
+ & first in list & 82\ci{78}{86} & 90\ci{86}{93} & 4\ci{2}{7} \\
+ & middle in list & 5\ci{4}{7} & 81\ci{76}{85} & 8\ci{5}{10} \\
+ & last in list & 20\ci{16}{24} & 82\ci{77}{86} & 6\ci{4}{9} \\
+\midrule
+Gemma-2-9B & alone ($k{=}0$) & 97\ci{94}{99} & 98\ci{95}{100} & 0\ci{0}{2} \\
+ & first in list & 81\ci{78}{85} & 98\ci{96}{99} & 0\ci{0}{1} \\
+ & middle in list & 9\ci{7}{12} & 93\ci{90}{95} & 2\ci{1}{3} \\
+ & last in list & 18\ci{15}{20} & 96\ci{94}{98} & 2\ci{1}{4} \\
+\midrule
+Llama-3.1-8B & alone ($k{=}0$) & 93\ci{89}{96} & 93\ci{89}{96} & 6\ci{3}{9} \\
+ & first in list & 66\ci{60}{71} & 85\ci{81}{89} & 7\ci{4}{10} \\
+ & middle in list & 42\ci{38}{46} & 78\ci{74}{83} & 11\ci{8}{15} \\
+ & last in list & 66\ci{60}{71} & 86\ci{81}{89} & 7\ci{5}{10} \\
+\bottomrule
+\end{tabular}
