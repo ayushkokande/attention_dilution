@@ -48,7 +48,8 @@ def main():
 
     def eligible(r, harmful):
         return (r["is_harmful"] == harmful and r["template"] == "numbered" and r["k"] == args.k
-                and r["pos"] in ("middle", "last") and r["target_item"] in find_item_markers(r["response"], r["n_items"]))
+                and r["pos"] in ("middle", "last") and not r.get("upfront")
+                and r["target_item"] in find_item_markers(r["response"], r["n_items"]))
     harm = [r for r in rows if eligible(r, True)]
     # prioritise cases where the unsteered model complied (that is where rescue matters)
     harm.sort(key=lambda r: (r.get("outcome") != "COMPLY", r["rid"]))

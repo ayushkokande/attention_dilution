@@ -73,6 +73,9 @@ for m in MODELS:
                 item_refuse=boot(rows, lambda r: r["outcome"] == "REFUSE"),
                 asr=boot(rows, lambda r: bool(r.get("hb"))),
                 other=boot(rows, lambda r: r["outcome"] == "OTHER"),
+                locus_upfront=boot(rows, lambda r: r.get("locus") == "upfront"),
+                locus_in_item=boot(rows, lambda r: r.get("locus") in ("in_item", "elsewhere")),
+                any_refusal=boot(rows, lambda r: r["item_ref"]),
                 v1_says_comply_but_refused=boot(rows, lambda r: (not r["v1_24"]) and r["outcome"] == "REFUSE"),
             )
     s["grid"] = grid
