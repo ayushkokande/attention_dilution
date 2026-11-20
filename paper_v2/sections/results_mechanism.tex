@@ -14,10 +14,16 @@ in lists (53\% and 49\%). For Llama-3.1-8B the opposite holds: prompt-only ablat
 25--31\% and raises ASR from 10--12\% to 47--60\%, while generation-only ablation has a smaller effect
 (\cref{tab:ablate}). Gemma-2-9B sits closer to Qwen3-14B: prompt-only ablation lowers its list refusal only to \AblGemmaFourPromptRef{} and \AblGemmaEightPromptRef{} (alone: \AblGemmaAlonePromptRef{}), while generation-only ablation, which barely touches the request alone (\AblGemmaAloneGenRef{}), removes nearly all list refusals (\AblGemmaFourGenRef{} and \AblGemmaEightGenRef{}, ASR \AblGemmaFourGenASR{} and \AblGemmaEightGenASR{}). Qwen3-14B and, largely, Gemma-2-9B re-derive the decision when they reach the item; Llama-3.1-8B carries a decision
 made at the prompt. This matches where each model refuses (\cref{sec:horizon}) and is our main mechanistic
-finding. A preregistered replication on 100 held-out HarmBench behaviours confirmed all four predictions we registered (\cref{app:decisions}, \cref{tab:heldout}): Qwen3-14B's list refusal was \HoQwenListsNoneRef{} without and \HoQwenListsPromptRef{} with prompt-only ablation while refusal of the request alone fell to \HoQwenAlonePromptRef{}; Llama-3.1-8B's list refusal fell from \HoLlamaListsNoneRef{} to \HoLlamaListsPromptRef{}. One caveat: for
-Qwen3-14B, removing $\dhat$ suppresses refusal phrasing but rarely yields content HarmBench rates harmful (ASR at
-most 7\% under any ablation), so for this model we locate where \emph{refusal} is decided, not where harm is
-permitted.
+finding. A preregistered replication on 100 held-out HarmBench behaviours confirmed all four predictions we registered (\cref{app:decisions}, \cref{tab:heldout}): Qwen3-14B's list refusal was \HoQwenListsNoneRef{} without and \HoQwenListsPromptRef{} with prompt-only ablation while refusal of the request alone fell to \HoQwenAlonePromptRef{}; Llama-3.1-8B's list refusal fell from \HoLlamaListsNoneRef{} to \HoLlamaListsPromptRef{}.
+
+\paragraph{Where a model refuses, not its family, predicts the result.} Llama-3.1-70B separates the two
+explanations. Unlike its 8B sibling, it refuses at the item more often than up front (\cref{sec:robust}). Before
+running it we registered two conflicting predictions: that it would behave like Llama-3.1-8B (family), and that it
+would behave like Qwen3-14B (refusal locus). On the same held-out set, prompt-only ablation lowered its refusal of
+the request alone from \HoLlamaHugeAloneNoneRef{} to \HoLlamaHugeAlonePromptRef{} (ASR \HoLlamaHugeAloneNoneASR{} to
+\HoLlamaHugeAlonePromptASR{}) but left list refusal intact (\HoLlamaHugeListsNoneRef{} without,
+\HoLlamaHugeListsPromptRef{} with ablation). The family prediction failed and the locus prediction held. A second
+test of the same link, on Gemma-2-27B, which refuses mostly up front, is reported in \cref{app:decisions}.
 
 \paragraph{Forced compliant openings deep in a response.} \citet{qi2025shallow} show that forcing a compliant
 opening (``Sure, here is \dots'') defeats most refusals because alignment concentrates on the first output

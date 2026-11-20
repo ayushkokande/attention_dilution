@@ -321,6 +321,11 @@ if HO:
     lines[-1] = r"\bottomrule"
     lines.append(r"\end{tabular}")
     (DST / "tab_heldout.tex").write_text("\n".join(lines))
+    for m, R0 in HO.items():
+        for c in ("none", "prompt"):
+            L = [r for r in R0 if r["cond"] == c and r["k"] in (3, 7) and r["item_ref"]]
+            if L:
+                mac(f"Ho{TAG[m]}InItem{c.capitalize()}", f"{100 * np.mean([r['locus'] == 'in_item' for r in L]):.0f}\\%")
     if "qwen3-14b" in HO:
         R = [r for r in HO["qwen3-14b"] if r["cond"] == "prompt" and r["k"] in (3, 7) and r["item_ref"]]
         mac("HoQwenInItemShare", f"{100 * np.mean([r['locus'] == 'in_item' for r in R]):.0f}\\%")

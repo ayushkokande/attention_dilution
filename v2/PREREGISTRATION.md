@@ -79,3 +79,17 @@ for Llama-3.1-70B stand as registered.
 Rerun of the Gemma-2-27B test (queued 2026-11-20 ~16:45 UTC): same predictions 8–9, same held-out set and
 conditions, direction re-extracted with the coherence-checked selection rule. The first attempt's outputs are
 kept (`*_attempt1`) and both attempts are reported.
+
+## Outcomes for Llama-3.1-70B (judged 2026-11-20 18:52 UTC)
+
+Direction: layer 42 of 80, coherence check passed (0% degenerate). Held-out, target-specific refusal:
+
+| condition | none | prompt-only ablation |
+|---|---|---|
+| alone | 83% (ASR 16%) | 46% (ASR 43%) |
+| lists pooled (4 and 8 items, last) | 66% (ASR 19%) | 72% (ASR 14%) |
+
+- Prediction 5 (judge gap): **held** (behaviour grid).
+- Prediction 6 (family: lists drop ≥ 30 points): **failed** (+6 points).
+- Prediction 7 (alone drops ≥ 30 points): **held** (−37 points).
+- Prediction 10 (locus: lists drop < 30 points): **held**.

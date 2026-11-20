@@ -11,7 +11,8 @@ Llama-3.1-8B up front, and this changes with scale within a family. A short-hori
 The pattern holds under sampling, a second judge, reasoning mode and other kinds of benign content; adversarial
 framings, not list structure, account for the high success rates reported for embedded-prompt attacks.
 Mechanistically, ablating the refusal direction only at prompt positions leaves Qwen3-14B's in-list refusals
-intact but removes most of Llama-3.1-8B's, in line with where each model refuses (a preregistered test on
-held-out behaviours confirmed this), and the end-of-prompt read-out
-mostly reflects the request itself rather than a list-specific plan. We give a protocol for evaluating
+intact but removes most of Llama-3.1-8B's. Preregistered tests on held-out behaviours confirmed this and
+showed that where a model refuses, not its family, predicts the result: Llama-3.1-70B, which refuses at the item,
+keeps its in-list refusals like Qwen3-14B. The end-of-prompt read-out mostly reflects the request itself
+rather than a list-specific plan. We give a protocol for evaluating
 multi-request prompts.

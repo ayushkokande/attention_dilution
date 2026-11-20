@@ -35,7 +35,8 @@ Gemma-2-9B mostly at the item, Llama-3.1-8B mostly up front. A short-horizon jud
 they refuse rather than whether they do (\cref{sec:horizon}). We give a judging protocol (\cref{sec:discussion}).
 \item \textbf{Where the decision is carried depends on the model.} Ablating the refusal direction
 \citep{arditi2024refusal} only at prompt positions leaves Qwen3-14B's in-list refusals intact but removes most of
-Llama-3.1-8B's, matching where each model refuses; a preregistered test on held-out behaviours confirmed this
+Llama-3.1-8B's, matching where each model refuses. Preregistered tests on held-out behaviours confirmed this, including
+for Llama-3.1-70B, which refuses at the item and keeps its in-list refusals unlike its 8B sibling
 (\cref{sec:mechanism}). This extends evidence that refusal depends on how the refusal signal evolves during
 generation \citep{dahiya2026suppress,yamaguchi2025reasoning} to multi-request prompts.
 \end{enumerate}
