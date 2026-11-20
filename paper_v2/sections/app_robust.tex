@@ -1,0 +1,26 @@
+\section{Further robustness checks}
+\label{app:robust}
+
+\paragraph{Sampled decoding.} With temperature 0.7 and three samples per prompt, the gap persists for every
+model: with the harmful item last, the 24-token judge reports \SampQwenLastVone, \SampGemmaLastVone\ and
+\SampLlamaLastVone\ refusal for Qwen3-14B, Gemma-2-9B and Llama-3.1-8B, against \SampQwenLastRef,
+\SampGemmaLastRef\ and \SampLlamaLastRef\ target refusal and \SampQwenLastASR, \SampGemmaLastASR\ and
+\SampLlamaLastASR\ ASR (\cref{tab:variants}).
+
+\paragraph{Reasoning mode.} With Qwen3-14B's thinking mode on (4{,}096 extra tokens for the trace), the
+24-token judge applied to the answer after the trace reports \ThinkLastVone\ refusal with the harmful item last,
+while the target is refused in \ThinkLastRef\ of answers and HarmBench ASR is \ThinkLastASR\ (alone: \ThinkAloneRef\
+refused, \ThinkAloneASR\ ASR). The trace itself contains refusal language in \ThinkRefInThinking\ of list
+responses, so a judge that read the trace would see the decision early, but one that reads only the opening of
+the answer would not (\cref{tab:variants}).
+
+\paragraph{What surrounds the request.} Replacing Alpaca instructions with coding tasks, math word problems or
+factual questions as the benign items (8-item lists, harmful item in the middle or last) leaves ASR low for
+every model (\cref{tab:content}; at most \CtLlamaCodeASR, for Llama-3.1-8B with coding tasks). The kind of
+benign content changes how often a model refuses up front: Gemma-2-9B's 24-token refusal rate is 10\% with
+Alpaca items and 56\% with coding tasks. It does not change whether the target is refused (Gemma-2-9B:
+\CtGemmaCodeRef\ to \CtGemmaQaRef). The one low cell, Qwen3-14B with math problems (\CtQwenMathRef\ refused,
+\CtQwenMathASR\ ASR), is mostly a measurement gap. In a spot check of six responses that were neither refused
+nor harmful, the model prefixed the item with a warning (``\emph{Note:} this request is illegal and
+unethical'') that our phrase list does not match, so 66\% is a lower bound.
+

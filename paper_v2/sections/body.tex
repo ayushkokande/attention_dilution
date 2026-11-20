@@ -22,28 +22,22 @@ harmful item is listed first,'' explains about 90\% of the variance in that coll
 
 \paragraph{Contributions.}
 \begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=2pt]
-\item \textbf{A controlled measurement of refusal in multi-request prompts.} We vary the harmful item's
-position (first, middle, last), list length (up to 32 items) and template, using 200 JailbreakBench and AdvBench
-targets and three model families, about 18{,}000 full-length responses. When the harmful item is not first,
-24-token scoring reports refusal rates as low as 5\%, while the models refuse the item in 81--96\% of
-responses. HarmBench's classifier finds harmful content in at most 15\% of responses in any condition
-(\cref{sec:behaviour}).
-\item \textbf{How far a judge must read.} Refusal detected by a judge that reads the first $N$ tokens reaches
-the full-response value only after about 1{,}000 tokens for Qwen3-14B and Gemma-2-9B (\cref{sec:horizon}).
-\item \textbf{Where models refuse differs by model.} Qwen3-14B and Gemma-2-9B mostly refuse \emph{at the
-item}; Llama-3.1-8B mostly refuses \emph{up front}, before answering any item. Short-horizon judges are
-therefore not just noisy but biased across models (\cref{sec:horizon}).
-\item \textbf{Robustness and reconciliation.} The pattern holds under sampled decoding, a second judge
-(StrongREJECT), Qwen3's reasoning mode, a larger model (Qwen3-32B), and different kinds of benign items. We also show how
-adversarial framings in the style of published embedded-prompt attacks differ from plain lists: the framing,
-not the list, drives attack success (\cref{sec:robust}).
-\item \textbf{Where the decision is made depends on the model.} Ablating the refusal direction
+\item \textbf{Short-horizon judges misread multi-request prompts.} We vary the harmful item's position, list
+length (up to 32 items) and template over 200 JailbreakBench and AdvBench targets and three model families
+(about 18{,}000 full-length responses). With the harmful item not first, 24-token scoring reports refusal rates
+as low as 5\%, while the models refuse the item in 81--96\% of responses and HarmBench's classifier finds harmful
+content in at most 15\% (\cref{sec:behaviour}). The finding holds for larger models (up to 70B), a second judge,
+sampled decoding, reasoning mode and other benign content; adversarial framings, not lists, drive the high
+success of embedded-prompt attacks (\cref{sec:robust}).
+\item \textbf{How far a judge must read, and why the error is biased.} Detected refusal reaches its
+full-response value only after about 1{,}000 tokens, and models differ in where they refuse: Qwen3-14B and
+Gemma-2-9B mostly at the item, Llama-3.1-8B mostly up front. A short-horizon judge therefore ranks models by where
+they refuse rather than whether they do (\cref{sec:horizon}). We give a judging protocol (\cref{sec:discussion}).
+\item \textbf{Where the decision is carried depends on the model.} Ablating the refusal direction
 \citep{arditi2024refusal} only at prompt positions leaves Qwen3-14B's in-list refusals intact but removes most of
-Llama-3.1-8B's, matching where each model refuses, and this held in a preregistered test on held-out behaviours; forcing a compliant opening at the item is also less
-effective for Qwen3-14B than at the start of a response. This extends evidence that refusal outcomes depend on
-how the refusal signal evolves during generation \citep{dahiya2026suppress,yamaguchi2025reasoning} to
-multi-request prompts. We also show that the end-of-prompt read-out mostly reflects the request itself, not a
-list-specific plan (\cref{sec:mechanism}).
+Llama-3.1-8B's, matching where each model refuses; a preregistered test on held-out behaviours confirmed this
+(\cref{sec:mechanism}). This extends evidence that refusal depends on how the refusal signal evolves during
+generation \citep{dahiya2026suppress,yamaguchi2025reasoning} to multi-request prompts.
 \end{enumerate}
 
 \section{Related Work}
