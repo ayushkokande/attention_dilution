@@ -10,7 +10,7 @@ produced it. The paper is in [`../paper_v2/`](../paper_v2/) and the results are 
 |---|---|---|
 | Refusal scoring | substring match on the first 24 generated tokens | full greedy generation; HarmBench classifier on the whole response; target-specific refusal phrases with a measured false-positive rate |
 | Harmful item position | hash-random in the list | controlled: first / middle / last, same benign items |
-| Models | Qwen3-14B | Qwen3-14B, Gemma-2-9B-it, Llama-3.1-8B-Instruct |
+| Models | Qwen3-14B | Qwen3-14B, Gemma-2-9B-it, Llama-3.1-8B-Instruct; larger: Qwen3-32B, Gemma-2-27B-it, Llama-3.1-70B-Instruct |
 | Targets | 100 AdvBench | 100 JailbreakBench + the same 100 AdvBench |
 | Templates | 1 | 3 (numbered, bullets, "Task i:") |
 | Probes | last prompt token only | last prompt token **and** the harmful item's answer onset in the model's own response |
@@ -28,7 +28,16 @@ produced it. The paper is in [`../paper_v2/`](../paper_v2/) and the results are 
 | `steer.py` | E4: item-time activation addition |
 | `analyze.py`, `make_tables.py` | summary JSON, figures, LaTeX tables and macros for the paper |
 | `run_chain.sh`, `run_all.sh`, `setup_pod.sh` | one-command run on a 2-GPU pod |
+| `causal.py` | E5–E8, E13–E15: position-masked ablation (`ablate`, `--heldout`), forced openings (`prefill`), single-token addition (`steer1`), head zeroing (`head`) |
+| `srjudge.py` | StrongREJECT judge (whole response or `--segment`) |
+| `analyze_causal.py` | tables and macros for every intervention and robustness experiment |
+| `export_labels.py` | public label export (strips response text) |
+| `plot_horizon.py` | judge-horizon figure |
+| `PREREGISTRATION.md` | predictions committed before each confirmation run |
+| `run_causal.sh`, `run_round3.sh`, `run_content.sh`, `run_scale.sh`, `run_27b*.sh`, `run_70b*.sh`, `pod_scripts/` | the queues actually run on the pods |
 | `tests/test_mech.py` | CPU tests: head-attention recompute matches eager attention; hooks; segmentation |
+
+Full documentation (experiment index, compute runbook, paper build, submission checklist): [`../docs/`](../docs/).
 
 ## Reproduce
 

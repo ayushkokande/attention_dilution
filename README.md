@@ -8,6 +8,12 @@ Ayush Kokande, Suraj Mishra · New York University · May 2026
 
 ---
 
+> **Update (Nov 2026): v2 re-measures this project and overturns its headline result.** With the harmful
+> item's position controlled and full responses judged, models refuse the item at the item itself; the
+> "collapse" came from a 24-token judge. The new paper ("Deferred Refusal: Short-Horizon Judges Misread Safety
+> in Multi-Request Prompts") is in [`paper_v2/`](paper_v2/), code in [`v2/`](v2/), and full documentation in
+> [`docs/`](docs/) (branch `v2-deferred-refusal`). The v1 description below is kept as the original record.
+
 ## TL;DR
 
 Safety-tuned language models that reliably refuse a harmful request in isolation often comply with the

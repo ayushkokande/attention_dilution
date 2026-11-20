@@ -282,7 +282,9 @@ if CT:
 # ---------------- preregistered held-out confirmation (v2/PREREGISTRATION.md)
 NICE["llama31-70b"] = "Llama-3.1-70B"
 TAG["llama31-70b"] = "LlamaHuge"
-HO = {m: load(f"judged_ablateho_{m}.jsonl") for m in ("qwen3-14b", "llama31-8b", "llama31-70b")}
+NICE["gemma2-27b"] = "Gemma-2-27B"
+TAG["gemma2-27b"] = "GemmaBig"
+HO = {m: load(f"judged_ablateho_{m}.jsonl") for m in ("qwen3-14b", "llama31-8b", "gemma2-27b", "llama31-70b")}
 HO = {m: v for m, v in HO.items() if v}
 if HO:
     lines = [r"\begin{tabular}{llcccc}", r"\toprule",
