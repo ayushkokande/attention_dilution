@@ -181,5 +181,55 @@ lines[-1] = r"\bottomrule"
 lines.append(r"\end{tabular}")
 (DST / "tab_variants.tex").write_text("\n".join(lines))
 
+
+# ---------------- scale (Qwen3-32B), framing, content
+NICE4 = dict(NICE, **{"qwen3-32b": "Qwen3-32B"})
+TAG["qwen3-32b"] = "QwenBig"
+R = [r for r in load("judged_scale_qwen3-32b.jsonl") if r["is_harmful"]]
+if R:
+    for j, (lab, sel) in enumerate([("Alone", lambda r: r["k"] == 0)] + [(p.capitalize(), (lambda p: lambda r: r["k"] >= 3 and r["pos"] == p)(p)) for p in ("first", "middle", "last")]):
+        rows = [r for r in R if sel(r)]
+        mac(f"Big{lab}Vone", f"{100 * np.mean([r['v1_24'] for r in rows]):.0f}\\%")
+        mac(f"Big{lab}Ref", f"{100 * np.mean([ref(r) for r in rows]):.0f}\\%")
+        mac(f"Big{lab}ASR", f"{100 * np.mean([hb(r) for r in rows]):.0f}\\%")
+    B = [r for r in load("judged_scale_qwen3-32b.jsonl") if not r["is_harmful"] and r["k"] > 0]
+    if B:
+        mac("BigBenignFP", f"{100 * np.mean([ref(r) for r in B]):.1f}\\%")
+FR = {m: load(f"judged_framing_{m}.jsonl") for m in list(NICE) + ["qwen3-32b"]}
+FR = {m: v for m, v in FR.items() if v}
+if FR:
+    ms = list(FR)
+    lines = [r"\begin{tabular}{ll" + "c" * len(ms) + "}", r"\toprule",
+             "Framing & Harmful item & " + " & ".join(NICE4[m] for m in ms) + r" \\", r"\midrule"]
+    for t in ("numbered", "game", "dialogue", "qbank"):
+        for pos in ("first", "late"):
+            cells = []
+            for m in ms:
+                rows = [r for r in FR[m] if r["template"] == t and r["pos"] == pos]
+                cells.append(f"{100 * np.mean([hb(r) for r in rows]):.0f} / {100 * np.mean([r['v1_24'] for r in rows]):.0f}" if rows else "--")
+                if rows:
+                    mac(f"Fr{TAG[m]}{t.capitalize()}{pos.capitalize()}ASR", f"{100 * np.mean([hb(r) for r in rows]):.0f}\\%")
+            lines.append(f"{ {'numbered': 'plain numbered list', 'game': 'text-adventure game', 'dialogue': 'student/mentor dialogue', 'qbank': 'exam question bank'}[t] if pos == 'first' else ''} & {pos} & " + " & ".join(cells) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    (DST / "tab_framing.tex").write_text("\n".join(lines))
+CT = {m: load(f"judged_content_{m}.jsonl") for m in NICE}
+CT = {m: v for m, v in CT.items() if v}
+if CT:
+    ms = list(CT)
+    lines = [r"\begin{tabular}{l" + "ccc" * len(ms) + "}", r"\toprule",
+             "Benign items & " + " & ".join(f"\\multicolumn{{3}}{{c}}{{{NICE[m]}}}" for m in ms) + r" \\",
+             " & " + " & ".join(["24-tok & refused & ASR"] * len(ms)) + r" \\", r"\midrule"]
+    for c, lab in (("alpaca", "Alpaca instructions"), ("code", "coding tasks (MBPP)"), ("math", "math problems (GSM8K)"), ("qa", "factual questions (NQ)")):
+        cells = []
+        for m in ms:
+            rows = [r for r in CT[m] if r["rid"].endswith("|" + c)]
+            cells += [f"{100 * np.mean([r['v1_24'] for r in rows]):.0f}", f"{100 * np.mean([ref(r) for r in rows]):.0f}", f"{100 * np.mean([hb(r) for r in rows]):.0f}"] if rows else ["--"] * 3
+            if rows:
+                mac(f"Ct{TAG[m]}{c.capitalize()}ASR", f"{100 * np.mean([hb(r) for r in rows]):.0f}\\%")
+                mac(f"Ct{TAG[m]}{c.capitalize()}Ref", f"{100 * np.mean([ref(r) for r in rows]):.0f}\\%")
+        lines.append(f"{lab} & " + " & ".join(cells) + r" \\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    (DST / "tab_content.tex").write_text("\n".join(lines))
+
 (DST / "macros_causal.tex").write_text("\n".join(f"\\newcommand{{\\{k}}}{{{v}}}" for k, v in sorted(M.items())) + "\n")
 print(json.dumps(M, indent=0))

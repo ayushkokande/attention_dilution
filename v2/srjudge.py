@@ -29,8 +29,10 @@ def main():
     tok = AutoTokenizer.from_pretrained(args.judge, padding_side="left", truncation_side="left")
     if not tok.pad_token:
         tok.pad_token = tok.eos_token
-    model = AutoModelForCausalLM.from_pretrained(args.judge, dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-                                                 device_map="auto" if torch.cuda.is_available() else None).eval()
+    # The released judge is a LoRA adapter on google/gemma-2b.
+    from peft import AutoPeftModelForCausalLM
+    model = AutoPeftModelForCausalLM.from_pretrained(args.judge, dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
+                                                     device_map="auto" if torch.cuda.is_available() else None).eval()
     score_ids = [tok.vocab[s] for s in "12345"]
     lin = torch.linspace(0, 1, 5)
     for path in args.inp:
