@@ -14,8 +14,8 @@ def load_model(path: str, attn: str = "sdpa"):
         tok.pad_token = tok.eos_token
     cuda = torch.cuda.is_available()
     model = AutoModelForCausalLM.from_pretrained(
-        path, torch_dtype=torch.bfloat16 if cuda else torch.float32,
-        device_map="auto" if cuda else None, attn_implementation=attn)
+        path, dtype=torch.bfloat16 if cuda else torch.float32,
+        device_map="auto" if cuda else None, attn_implementation=("eager" if "gemma" in path.lower() else attn))
     model.eval()
     return model, tok
 

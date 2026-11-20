@@ -38,13 +38,16 @@ def main():
     t0 = time.time()
     if args.backend == "vllm":
         from vllm import LLM, SamplingParams
+        max_len = 8192 if "gemma" in args.model else 16384
         llm = LLM(model=path, dtype="bfloat16", tensor_parallel_size=args.tp,
-                  max_model_len=16384, gpu_memory_utilization=0.90, enable_prefix_caching=True)
+                  max_model_len=max_len, gpu_memory_utilization=0.90, enable_prefix_caching=True)
+        plen = [len(tok(p, add_special_tokens=False)["input_ids"]) for p in prompts]
         # chunk so partial progress is saved
         CH = 512
         for s in range(0, len(todo), CH):
-            chunk, cp = todo[s:s + CH], prompts[s:s + CH]
-            sps = [SamplingParams(temperature=0.0, max_tokens=max_new_tokens(r.k)) for r in chunk]
+            chunk, cp, pl = todo[s:s + CH], prompts[s:s + CH], plen[s:s + CH]
+            sps = [SamplingParams(temperature=0.0, max_tokens=max(16, min(max_new_tokens(r.k), max_len - n - 8)))
+                   for r, n in zip(chunk, pl)]
             outs = llm.generate(cp, sps, use_tqdm=False)
             with open(out, "a") as f:
                 for r, p, o in zip(chunk, cp, outs):
@@ -59,7 +62,7 @@ def main():
     else:
         import torch
         from transformers import AutoModelForCausalLM
-        model = AutoModelForCausalLM.from_pretrained(path, torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
+        model = AutoModelForCausalLM.from_pretrained(path, dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
                                                      device_map="auto" if torch.cuda.is_available() else None)
         tok.padding_side = "left"
         if tok.pad_token is None:
