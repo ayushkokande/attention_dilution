@@ -10,7 +10,7 @@ import json
 import time
 from dataclasses import asdict
 
-from common import MODELS, OUT, build_grid, chat_text, max_new_tokens, read_jsonl
+from common import MODELS, OUT, build_grid, build_variant_grid, chat_text, max_new_tokens, read_jsonl
 
 SEED_BASE = 1234
 
@@ -22,14 +22,15 @@ def main():
     ap.add_argument("--backend", default="vllm", choices=["vllm", "hf"])
     ap.add_argument("--hf-path", default=None, help="override weights path (smoke tests)")
     ap.add_argument("--tp", type=int, default=1)
-    ap.add_argument("--variant", default=None, choices=[None, "thinking", "sample"],
+    ap.add_argument("--variant", default=None, choices=[None, "thinking", "sample", "scale", "framing"],
                     help="thinking: Qwen3 with reasoning on; sample: T=0.7/top-p 0.95, 3 seeds. Reduced grid.")
     args = ap.parse_args()
 
     tag = f"_{args.variant}" if args.variant else ""
     out = OUT / f"gen{tag}_{args.model}{'_smoke' if args.smoke else ''}.jsonl"
-    rows = build_grid(args.model, smoke=args.smoke)
-    if args.variant:   # reduced grid: numbered template, k in {0,3,15}, first/last
+    rows = build_variant_grid(args.model, args.variant) if args.variant in ("scale", "framing") \
+        else build_grid(args.model, smoke=args.smoke)
+    if args.variant in ("thinking", "sample"):   # reduced grid: numbered template, k in {0,3,15}, first/last
         rows = [r for r in rows if r.template == "numbered" and r.k in (0, 3, 15) and r.pos in ("first", "last")]
     if args.variant == "thinking":
         MODELS[args.model] = dict(MODELS[args.model], chat_kwargs={"enable_thinking": True})
