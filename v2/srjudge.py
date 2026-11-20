@@ -24,6 +24,9 @@ def main():
     ap.add_argument("--in", dest="inp", action="append", required=True)
     ap.add_argument("--bs", type=int, default=32)
     ap.add_argument("--judge", default=JUDGE)
+    ap.add_argument("--segment", action="store_true",
+                    help="score only the harmful item's answer segment (field sr_seg, file .srseg.jsonl); "
+                         "rows without a segment fall back to the whole response")
     args = ap.parse_args()
     from transformers import AutoModelForCausalLM, AutoTokenizer
     tok = AutoTokenizer.from_pretrained(args.judge, padding_side="left", truncation_side="left")
@@ -41,7 +44,8 @@ def main():
         for i, r in enumerate(rows):
             if not r["is_harmful"]:
                 continue
-            ids = tok(r["response"], add_special_tokens=False)["input_ids"]
+            text = (r.get("segment") or r["response"]) if args.segment else r["response"]
+            ids = tok(text, add_special_tokens=False)["input_ids"]
             starts = list(range(0, max(1, len(ids) - 512 + 384), 384)) if len(ids) > 512 else [0]
             for s in starts:
                 prompts.append(TEMPLATE.format(forbidden_prompt=r["target"], response=tok.decode(ids[s:s + 512])))
@@ -60,8 +64,8 @@ def main():
         for i, s in zip(owner, scores):
             best[i] = max(best.get(i, 0.0), s)
         for i, r in enumerate(rows):
-            r["sr"] = best.get(i)
-        out = Path(path).with_suffix(".sr.jsonl")
+            r["sr_seg" if args.segment else "sr"] = best.get(i)
+        out = Path(path).with_suffix(".srseg.jsonl" if args.segment else ".sr.jsonl")
         with open(out, "w") as f:
             for r in rows:
                 f.write(json.dumps(r) + "\n")

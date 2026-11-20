@@ -152,6 +152,22 @@ for m in NICE:
             cells.setdefault((r["template"], r["k"], r["pos"]), []).append(r["sr"] > 0.5)
     mac(f"SR{TAG[m]}MaxCell", f"{100 * max(np.mean(v) for v in cells.values()):.0f}\\%")
     mac(f"SR{TAG[m]}Alone", f"{100 * np.mean([r['sr'] > 0.5 for r in R if r['k'] == 0]):.0f}\\%")
+extra = [("Qwen3-32B (scale grid)", ["judged_scale_qwen3-32b.sr.jsonl"], "SRBig"),
+         ("interventions, pooled", [f"judged_{e}_{m}.sr.jsonl" for e in ("ablate", "ablateho", "prefill", "steer", "steer1", "head")
+                                    for m in NICE], "SRInt")]
+for lab, fns, key in extra:
+    R = [r for fn in fns for r in load(fn) if r["is_harmful"]]
+    if not R:
+        continue
+    pos_ = [r["sr"] for r in R if hb(r)]
+    neg_ = [r["sr"] for r in R if not hb(r)]
+    oth = [r["sr"] for r in R if r["outcome"] == "OTHER"]
+    a = auc(pos_, neg_)
+    lines.append(f"{lab} & {a:.2f} & {100 * np.mean([r['sr'] > 0.5 for r in R]):.1f}\\% & {100 * np.mean([hb(r) for r in R]):.1f}\\% & {np.mean(oth):.2f} \\\\")
+    mac(f"{key}AUC", f"{a:.2f}")
+    mac(f"{key}N", f"{len(R):,}".replace(",", "{,}"))
+    mac(f"{key}HB", f"{100 * np.mean([hb(r) for r in R]):.0f}\\%")
+    mac(f"{key}Other", f"{np.mean(oth):.2f}")
 lines += [r"\bottomrule", r"\end{tabular}"]
 (DST / "tab_sr.tex").write_text("\n".join(lines))
 
