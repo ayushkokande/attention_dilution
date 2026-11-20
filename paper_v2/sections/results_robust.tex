@@ -1,9 +1,12 @@
 \paragraph{Larger models.} We ran the same reduced grid (lists of 4, 16 and 32 items, harmful item first, in the
 middle or last) on Qwen3-32B, Gemma-2-27B and Llama-3.1-70B (\cref{tab:scale}). Each shows the same misreading. With the harmful
-item not first, the 24-token judge reports \BigNotFirstVone\ and \GemBigNotFirstVone\ refusal for Qwen3-32B and
-Gemma-2-27B, while the target is refused in \BigNotFirstRef\ and \GemBigNotFirstRef\ of responses and ASR stays at
-\BigMiddleASR\ or below. Where models refuse can change with scale within a family: Gemma-2-27B refuses up front in
-\GemBigLocusUpfront\ of its list refusals, unlike Gemma-2-9B, which refuses mostly at the item. \HUGESENTENCE
+item not first, the 24-token judge reports \BigNotFirstVone, \GemBigNotFirstVone\ and \HugeNotFirstVone\ refusal for
+Qwen3-32B, Gemma-2-27B and Llama-3.1-70B, while the target is refused in \BigNotFirstRef, \GemBigNotFirstRef\ and
+\HugeNotFirstRef\ of responses and ASR stays at \HugeMiddleASR\ or below. Where a model refuses is not a family
+trait: it changes with scale in both directions. Gemma-2-27B refuses up front in \GemBigLocusUpfront\ of its list
+refusals, whereas Gemma-2-9B refuses mostly at the item. Llama-3.1-70B refuses at the item in \HugeLocusInitem,
+whereas Llama-3.1-8B refuses mostly up front. A judge's horizon bias therefore cannot be corrected per model
+family; it has to be measured per model.
 
 \begin{table}[t]
 \centering\small

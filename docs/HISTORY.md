@@ -60,9 +60,10 @@ Each prediction was committed to git before its run started. Check the commit ti
 | Commit | Predictions | Outcome |
 |---|---|---|
 | 9006e74 | 1–4: Qwen3-14B keeps in-list refusal under prompt-only ablation; Llama-3.1-8B loses it (100 held-out HarmBench behaviours, seed 2027) | **all held** (Qwen lists 74→82%, alone 81→40%; Llama lists 74→12%) |
-| 513da53 | 5–7: Llama-3.1-70B shows the judge gap and behaves like Llama-3.1-8B under prompt-only ablation | see `EXPERIMENTS.md` E15 |
+| 513da53 | 5–7: Llama-3.1-70B shows the judge gap (5) and behaves like Llama-3.1-8B under prompt-only ablation (6, 7) | 5 **held** (24-tok 15% vs 74%; ASR 8%); 6–7: see `EXPERIMENTS.md` E15 |
 | b49248e | Gemma-2-27B shows the judge gap, ASR ≤ 15% | **held** (24-tok 33% vs 95% target refusal; ASR 1%) |
-| f2f0a7f | 8–9: Gemma-2-27B (refuses mostly up front) loses list refusal under prompt-only ablation | see `EXPERIMENTS.md` E14 |
+| f2f0a7f | 8–9: Gemma-2-27B (refuses mostly up front) loses list refusal under prompt-only ablation | **inconclusive**: the selected layer broke generation (97% repetitive text), so refusal cannot be read. This led to the coherence check in layer selection (b2690fd). |
+| 5d85a48 | 10: Llama-3.1-70B refuses at the item (unlike the 8B), so the locus hypothesis predicts it keeps list refusal under prompt-only ablation; this conflicts with family-based prediction 6 | see `EXPERIMENTS.md` E15 |
 
 ## Interpretation guardrails (what the paper does *not* claim)
 

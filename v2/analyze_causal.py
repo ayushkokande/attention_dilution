@@ -286,6 +286,21 @@ NICE["gemma2-27b"] = "Gemma-2-27B"
 TAG["gemma2-27b"] = "GemmaBig"
 HO = {m: load(f"judged_ablateho_{m}.jsonl") for m in ("qwen3-14b", "llama31-8b", "gemma2-27b", "llama31-70b")}
 HO = {m: v for m, v in HO.items() if v}
+
+
+def _degenerate(text):
+    w = text.split()[:64]
+    if len(w) < 8:
+        return len(w) == 0
+    g = [tuple(w[i:i + 4]) for i in range(len(w) - 3)]
+    return len(set(g)) / len(g) < 0.5
+
+
+for m in list(HO):
+    dg = np.mean([_degenerate(r["response"]) for r in HO[m] if r["cond"] == "prompt"]) if "response" in HO[m][0] else 0.0
+    mac(f"Ho{TAG[m]}Degenerate", f"{100 * dg:.0f}\\%")
+    if dg > 0.5:  # ablation broke generation: report in text, not as a refusal result
+        HO.pop(m)
 if HO:
     lines = [r"\begin{tabular}{llcccc}", r"\toprule",
              r"Model & Prompt & \multicolumn{2}{c}{no ablation} & \multicolumn{2}{c}{prompt-only ablation} \\",
